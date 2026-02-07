@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+body{
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+  background:#ffffff;
+  color:#1b1b1b;
+}
+
+/* 共通 */
+.cookie{
+  background:#ffffff;
+  border-radius:32px;
+  padding:20px;
+  margin:15px;
+  border:1px solid #e9e4d6;
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.06),
+    inset 0 3px 5px rgba(255,255,255,.7);
+}
+
+h3{ margin-top:0 }
+
+.app-title{
+  background:#ffffff;
+  border-radius: 22px;
+  padding: 12px 22px;
+  display:block;
+  border:1px solid #e9e4d6;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  font-weight:800;
+  letter-spacing:0.04em;
+  font-size: 24px;
+  color:#1b1b1b;
+
+  /* 中央寄せ */
+  margin: 18px auto;
+  text-align: center;
+}
+
+#time{
+  font-size: 1.6em;   /* お好みで 1.4〜2.0em */
+  font-weight: bold;
+  margin-left: 6px;
+  display: inline-block;
+}
+.controls{
+  margin-top: 10px;
+}
+
+.controls label{
+  font-size: 1.1em;      /* 文字サイズ */
+  margin-right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.controls input[type="checkbox"]{
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.reload-btn{
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  border-radius: 20px;
+  border: 1px solid #d8c08a;
+
+  background: linear-gradient(
+    to bottom,
+    #cfa24a,
+    #b57a00
+  );
+
+  color: #ffffff;
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.12),
+    inset 0 2px 4px rgba(255,255,255,.35);
+
+  transition:
+    background .2s ease,
+    box-shadow .2s ease,
+    transform .1s ease;
+}
+
+.reload-btn:hover{
+  background: linear-gradient(
+    to bottom,
+    #ddb45c,
+    #c98a0a
+  );
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.18),
+    inset 0 2px 4px rgba(255,255,255,.45);
+}
+
+.reload-btn:active{
+  transform: translateY(1px);
+  box-shadow:
+    0 3px 6px rgba(0,0,0,.18),
+    inset 0 2px 4px rgba(255,255,255,.25);
+}
+
+
+
+
+
+/* 今日・1週間の予定の日付を大きく */
+.cookie > strong{
+  display: inline-block;
+  font-size: 1.25em;   /* ← ここで調整（1.2〜1.4くらいがおすすめ） */
+  margin: 6px 0 8px;
+}
+
+
+/* スクロール */
+.scroll{
+  overflow:hidden;
+  white-space:nowrap;
+}
+.scroll span{
+  display:inline-block;
+  padding-left:100%;
+  animation-name:scroll;
+  animation-timing-function:linear;
+  animation-iteration-count:1;
+  font-size: 20px;
+}
+@keyframes scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-100%)}
+}
+
+.blink{
+  animation-name:scroll, blink;
+}
+@keyframes blink{50%{opacity:0}}
+
+.controls label{
+  margin-right:10px;
+  font-size:0.9em;
+}
+
+/* ===== ここからカレンダー共通枠 ===== */
+.calendar-card{
+  margin: 10px 15px;
+  border: 2px solid #d8c08a;
+  border-radius: 28px;
+  padding: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+}
+
+/* タブ */
+.tabs{
+  display:flex;
+  justify-content:space-around;
+  margin: 10px;
+}
+.tabs button{
+  width: 23%;
+  padding: 10px;
+  border:none;
+  border-radius: 20px;
+  font-size: 18px;
+  cursor:pointer;
+  background:#ffffff;
+  color:#333;
+  border:1px solid #e9e4d6;
+  transition: transform .1s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+}
+
+/* 選択中タブの色を和モダンに変更 */
+.tabs button.tab-active{
+  background:#1b1b1b;
+  color:#fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,.15);
+}
+.tabs button.tab-inactive{
+  background:#ffffff;
+}
+
+/* ===== カレンダー ===== */
+.calendar-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.calendar-nav button{
+  border:none;
+  background:#1b1b1b;
+  color:#fff;
+  border-radius:16px;
+  padding:4px 12px;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  text-align:center;
+  font-size:12px;
+}
+.day-name{
+  font-weight:bold;
+  color:#444;
+}
+.today-label{
+  display:block;
+  font-size:10px;
+  margin-top:4px;
+  color:#b57a00;
+  font-weight:bold;
+}
+.cal-cell{
+  background:#fff;
+  border-radius:16px;
+  padding:8px 4px;
+  box-shadow:0 3px 0 rgba(0,0,0,0.05);
+  cursor:pointer;
+  border:1px solid #f0f0f0;
+}
+.cal-sun{
+  background:#fff4f4;
+}
+.cal-sat{
+  background:#f4f7ff;
+}
+/* 今日セルの点滅 */
+@keyframes blinkToday {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.cal-today{
+  background: #fff;
+  border: 2px solid #b57a00;
+  animation: blinkToday 1.2s infinite;
+}
+
+/* 記号説明 */
+.legend{
+  margin-top:10px;
+  font-size:12px;
+  color:#555;
+}
+
+/* ===== モーダル全体 ===== */
+.modal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+/* ===== モーダル枠 ===== */
+.modal-content{
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 20px;
+  width: 90%;
+  max-width: 420px;
+
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 6px 15px rgba(0,0,0,.25);
+}
+
+/* ===== 日付 ===== */
+.modal-date{
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* ===== 本文（スクロール領域） ===== */
+.modal-body{
+  flex: 1;
+  overflow-y: auto;
+  margin: 10px 0 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 本文テキスト */
+.modal-status{
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color:#333;
+}
+
+/* ===== セクション区切り ===== */
+.modal-section {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.modal-section strong{
+  display: block;
+  margin-bottom: 6px;
+  color:#111;
+}
+
+.modal-divider{
+  border-top: 1px dashed #d8c08a;
+  margin: 14px 0;
+}
+.modal-controls{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+.modal-controls button{
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ===== 戻るボタン（下固定） ===== */
+.modal-back{
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #1b1b1b;
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 20px;
+  cursor: pointer;
+
+  flex-shrink: 0;
+
+  box-shadow:
+    0 6px 10px rgba(0,0,0,.15),
+    inset 0 3px 5px rgba(255,255,255,.35);
+  transition: transform .1s ease, box-shadow .2s ease;
+}
+
+.modal-back:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 14px rgba(0,0,0,.2),
+    inset 0 3px 5px rgba(255,255,255,.45);
+}
+
+.modal-back:active{
+  transform: translateY(0);
+}
+
+/* ===== 部活用 ===== */
+.club-title {
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.club-detail {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 18px;
+  background: #f7f7f7;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.club-divider {
+  margin: 6px 0;
+  color: #999;
+}
+
+.paging-area{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.paging-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.paging-left{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.paging-right{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.paging-left span,
+.paging-left select{
+  font-size: 12px;
+}
+
+.paging-sep{
+  opacity: 0.6;
+}
+
+.paging-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: transform .1s ease, background .2s ease;
+  background:#1b1b1b;
+  color:#fff;
+}
+.paging-btn:hover {
+  transform: translateY(-1px);
+}
+.paging-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.club-card{
+  background: #ffffff;
+  border: 2px solid #d8c08a;
+  border-radius: 20px;
+  padding: 12px;
+  margin: 8px 0;
+  box-shadow:
+    0 6px 10px rgba(0,0,0,.12),
+    inset 0 3px 5px rgba(255,255,255,.4);
+}
+
+.club-card-title{
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.club-card-body{
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 14px;
+}
+/*ボタン色制御*/
+button[disabled]{
+  background: #cccccc !important;
+  cursor: not-allowed;
+}
+
+
+/* 下部リンク（カレンダー直下表示） */
+.link-area{
+  display:none;
+  grid-template-columns: repeat(3, 1fr); /* ← 3列固定 */
+  margin: 12px 15px 0;
+  padding: 10px 0;
+  display:flex;
+  gap: 10px;
+  justify-content:center;
+}
+
+.link-area button{
+  flex: 1 1 120px;
+  border:none;
+  border-radius: 18px;
+  padding: 10px 14px;
+  background: #1b1b1b;
+  color:#fff;
+  font-weight: 800;
+  cursor:pointer;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* スマホ対応 */
+@media (max-width: 600px){
+  body{ font-size: 12px; }
+  .cookie{
+    padding: 16px;
+    margin: 12px;
+    border-radius: 26px;
+  }
+  .cookie h3{
+    font-size: 1.05em;
+  }
+  .scroll span{
+    font-size: 16px;
+  }
+  .tabs button{
+    font-size: 16px;
+    padding: 8px;
+  }
+  .calendar-nav button{
+    font-size: 16px;
+    padding: 4px 10px;
+  }
+  .calendar-grid{
+    font-size: 11px;
+    gap: 5px;
+  }
+  .cal-cell{
+    padding: 6px 3px;
+    border-radius: 14px;
+  }
+  .today-label{
+    font-size: 9px;
+  }
+  .legend{
+    font-size: 11px;
+  }
+  .modal-content{
+    padding: 16px;
+    width: 94%;
+    max-width: 360px;
+  }
+  .modal-date{
+    font-size: 1.0em;
+  }
+  .modal-status{
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .modal-back{
+    font-size: 15px;
+    padding: 11px;
+  }
+  .club-card-body{
+    font-size: 13px;
+  }
+}
+
+/* iPad mini 縦（600px〜768px） */
+@media (min-width: 601px) and (max-width: 768px) and (orientation: portrait){
+  body{ font-size: 13px; }
+  .cookie{
+    padding: 18px;
+    margin: 14px;
+    border-radius: 28px;
+  }
+  .cookie h3{
+    font-size: 1.15em;
+  }
+  .scroll span{
+    font-size: 18px;
+  }
+  .tabs button{
+    font-size: 17px;
+    padding: 9px;
+  }
+  .calendar-nav button{
+    font-size: 17px;
+    padding: 4px 11px;
+  }
+  .calendar-grid{
+    font-size: 12px;
+    gap: 6px;
+  }
+  .cal-cell{
+    padding: 7px 4px;
+    border-radius: 15px;
+  }
+  .today-label{
+    font-size: 9.5px;
+  }
+  .legend{
+    font-size: 12px;
+  }
+  .modal-content{
+    padding: 18px;
+    width: 92%;
+    max-width: 380px;
+  }
+  .modal-date{
+    font-size: 1.05em;
+  }
+  .modal-status{
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .modal-back{
+    font-size: 15px;
+    padding: 11px;
+  }
+  .club-card-body{
+    font-size: 13.5px;
+  }
+}
+
+/* iPad 横（600px〜768px） */
+@media (min-width: 601px) and (max-width: 768px) and (orientation: landscape){
+  body{ font-size: 13.5px; }
+  .cookie{
+    padding: 20px;
+    margin: 14px;
+    border-radius: 28px;
+  }
+  .cookie h3{
+    font-size: 1.2em;
+  }
+  .scroll span{
+    font-size: 20px;
+  }
+  .tabs button{
+    font-size: 18px;
+    padding: 10px;
+  }
+  .calendar-nav button{
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+  .calendar-grid{
+    font-size: 12.5px;
+    gap: 6px;
+  }
+  .cal-cell{
+    padding: 8px 4px;
+    border-radius: 16px;
+  }
+  .today-label{
+    font-size: 10px;
+  }
+  .legend{
+    font-size: 12.5px;
+  }
+  .modal-content{
+    padding: 20px;
+    width: 86%;
+    max-width: 420px;
+  }
+  .modal-date{
+    font-size: 1.1em;
+  }
+  .modal-status{
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .modal-back{
+    font-size: 16px;
+    padding: 12px;
+  }
+  .club-card-body{
+    font-size: 14px;
+  }
+}
+
+/* PC（12~14inch） */
+@media (min-width: 769px) and (max-width: 1279px){
+  body{ font-size: 14px; }
+  .cookie{
+    padding: 20px;
+    margin: 16px;
+    border-radius: 30px;
+  }
+  .cookie h3{
+    font-size: 1.3em;
+  }
+  .scroll span{
+    font-size: 22px;
+  }
+  .tabs button{
+    font-size: 18px;
+    padding: 10px;
+  }
+  .calendar-nav button{
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+  .calendar-grid{
+    font-size: 13px;
+    gap: 7px;
+  }
+  .cal-cell{
+    padding: 9px 5px;
+    border-radius: 17px;
+  }
+  .today-label{
+    font-size: 10px;
+  }
+  .legend{
+    font-size: 13px;
+  }
+  .modal-content{
+    padding: 22px;
+    width: 70%;
+    max-width: 520px;
+  }
+  .modal-date{
+    font-size: 1.2em;
+  }
+  .modal-status{
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .modal-back{
+    font-size: 16px;
+    padding: 12px;
+  }
+  .club-card-body{
+    font-size: 14px;
+  }
+}
+
+/* PC（15inch以上） */
+@media (min-width: 1280px){
+  body{ font-size: 15px; }
+  .cookie{
+    padding: 22px;
+    margin: 18px;
+    border-radius: 32px;
+  }
+  .cookie h3{
+    font-size: 1.4em;
+  }
+  .scroll span{
+    font-size: 24px;
+  }
+  .tabs button{
+    font-size: 19px;
+    padding: 11px;
+  }
+  .calendar-nav button{
+    font-size: 19px;
+    padding: 6px 14px;
+  }
+  .calendar-grid{
+    font-size: 14px;
+    gap: 8px;
+  }
+  .cal-cell{
+    padding: 10px 6px;
+    border-radius: 18px;
+  }
+  .today-label{
+    font-size: 11px;
+  }
+  .legend{
+    font-size: 14px;
+  }
+  .modal-content{
+    padding: 24px;
+    width: 60%;
+    max-width: 640px;
+  }
+  .modal-date{
+    font-size: 1.25em;
+  }
+  .modal-status{
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  .modal-back{
+    font-size: 17px;
+    padding: 13px;
+  }
+  .club-card-body{
+    font-size: 15px;
+  }
+}
+
+
+</style>
+</head>
+
+<body>
+
+<!-- タイトル -->
+<h1 class="app-title">シネマクラブカレンダー</h1>
+
+<!-- 時刻 & 表示切替 -->
+<div class="cookie">
+  <strong>ただいまの時刻</strong>
+  <span id="time"></span>
+  
+  <div>
+  現在の部室人数：
+  <strong><span id="roomCount">0</span>人</strong>
+  </div>
+
+  <div class="controls">
+    <label><input type="checkbox" checked data-key="uni">大学共通</label>
+    <label><input type="checkbox" checked data-key="naka">中百舌鳥C</label>
+    <label><input type="checkbox" checked data-key="sug">杉本C</label>
+    <label><input type="checkbox" checked data-key="mori">森之宮C</label>
+    <label><input type="checkbox" checked data-key="club">部活</label>
+  </div>
+  <button class="reload-btn" onclick="load(true)">
+  🔄 再読み込み　最新情報に更新
+  </button>
+
+</div>
+
+<div id="today"></div>
+<div id="week"></div>
+
+<!-- ===== タブとカレンダーを一体化した枠 ===== -->
+<div class="calendar-card">
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button id="tabUni" class="tab-inactive" onclick="showTab('uni')">大学全体</button>
+    <button id="tabNaka" class="tab-active" onclick="showTab('naka')">中百舌鳥C</button>
+    <button id="tabMori" class="tab-inactive" onclick="showTab('mori')">森之宮C</button>
+    <button id="tabClub" class="tab-inactive" onclick="showTab('club')">部活動</button>
+  </div>
+
+  <!-- 中百舌鳥学事日程 -->
+  <div id="nakaArea">
+    <div id="calendar"></div>
+  </div>
+
+  <!-- 大学学事日程 -->
+  <div id="uniArea" style="display:none">
+    <div id="uniCalendar"></div>
+  </div>
+
+  <!-- 森之宮学事日程 -->
+  <div id="moriArea" style="display:none">
+    <div id="moriCalendar"></div>
+  </div>
+
+  <!-- 部活動日程 -->
+  <div id="clubArea" style="display:none">
+    <div id="clubCalendar"></div>
+  </div>
+
+</div>
+<!-- ===== ここまで一体化枠 ===== -->
+
+<div class="cookie">
+  <button id="enterBtn" class="reload-btn" onclick="enterRoom()"> 部室に入室する</button>
+  <button id="exitBtn" class="reload-btn" onclick="exitRoom()" disabled> 部室から退室する</button>
+</div>
+
+
+<!-- リンクエリア -->
+<div id="linkArea" class="link-area" ></div>
+
+<!-- モーダル -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <div id="modalDate" class="modal-date"></div>
+
+    <div class="modal-body">
+      <div id="modalStatus" class="modal-status"></div>
+    </div>
+
+    <button class="modal-back" onclick="closeModal()">
+      カレンダーに戻る
+    </button>
+  </div>
+</div>
+
+
+<script>
+let allData=[];
+let calendarData=[];
+let scheduleData = [];
+let clubCalData = [];
+let clubData = [];
+let weekIndex=0;
+let weekTimer=null;
+
+// カレンダー別オフセット
+let nakaOffset = 0;
+let uniOffset = 0;
+let moriOffset = 0;
+let clubOffset = 0;
+
+
+ //===== ID =====
+ // ★ 追加（グローバル）
+  const VISIT_KEY = "club_visit_id";
+
+  function getVisitId(){
+  let id = localStorage.getItem(VISIT_KEY);
+  if(!id){
+    id = crypto.randomUUID();
+    localStorage.setItem(VISIT_KEY, id);
+  }
+  return id;
+  }
+
+ const visitId = getVisitId();
+ const PAGE_NAME = "index";
+
+/* ================================
+   GAS / GitHub 両対応ラッパー
+================================ */
+
+const isGAS = typeof google !== "undefined"
+           && google.script
+           && google.script.run;
+
+/**
+ * GASなら google.script.run
+ * GitHubなら mock 関数
+ */
+function runGAS(method, ...args){
+  return new Promise((resolve, reject)=>{
+    if(isGAS){
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)[method](...args);
+    }else{
+      // GitHub用モック
+      mockAPI(method, ...args).then(resolve).catch(reject);
+    }
+  });
+}
+/* ================================
+   GitHub 用ダミーAPI
+================================ */
+
+function mockAPI(method){
+  switch(method){
+
+    case "getScheduleData":
+      return Promise.resolve({
+        schedule: [
+          {
+            dateISO: "2026-02-07",
+            month: 2,
+            day: 7,
+            week: "金",
+            uni: "通常授業",
+            naka: "〇",
+            sug: "",
+            mori: "",
+            clubList: [
+              { content: "上映会", time: "18:00-20:00", place: "部室" }
+            ]
+          }
+        ],
+        club: []
+      });
+
+    case "getCalendarData":
+      return Promise.resolve({
+        scheduleCal: [],
+        clubCal: []
+      });
+
+    case "getButtonData":
+      return Promise.resolve([
+        { name: "公式サイト", url: "https://example.com", target: "A" }
+      ]);
+
+    case "getRoomStatus":
+      return Promise.resolve({
+        count: 3,
+        myStatus: "out"
+      });
+    case "recordViewer":
+    return Promise.resolve(true);
+
+    default:
+      return Promise.resolve(null);
+
+  }
+}
+
+
+// ページを開いたら記録
+runGAS("recordViewer", PAGE_NAME, visitId);
+
+
+// 日付が変わったら自動で再読み込み
+function scheduleMidnightReload() {
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  const diff = next.getTime() - now.getTime();
+
+  setTimeout(() => {
+    load(true);
+    scheduleMidnightReload();
+  }, diff);
+}
+
+/* ===== 時刻 ===== */
+function updateTime(){
+  time.textContent=new Date().toLocaleString();
+}
+setInterval(updateTime,1000);
+updateTime();
+
+/* ===== データ読込 ===== */
+function load(force=false){
+
+  runGAS("getScheduleData").then(d=>{
+  scheduleData = d.schedule;
+  clubData     = d.club;
+  allData      = d.schedule;
+  render();
+  }).catch(()=>{
+  document.body.innerHTML="データの読み込みができません";
+  });
+
+  runGAS("getCalendarData").then(d=>{
+  calendarData = d.scheduleCal;
+  clubCalData  = d.clubCal;
+  renderNakaCalendar();
+  renderUniCalendar();
+  renderMoriCalendar();
+  renderClubCalendar();
+  return runGAS("getButtonData", "A", true);
+  }).then(renderLinks).catch(()=>{
+  document.body.innerHTML="データの読み込みができません";
+  });
+
+}
+
+
+// リンク表示
+const linkArea = document.getElementById("linkArea");
+function renderLinks(buttons){
+  const list = (buttons || [])
+    .filter(item => item.name && item.url && item.target)
+    .filter(item => String(item.target || "").trim().toUpperCase().includes("A"));
+
+  if(!list.length){
+    linkArea.style.display = "none";
+    return;
+  }
+
+  linkArea.style.display = "flex";
+  linkArea.innerHTML = list.map(b =>
+    `<button onclick="window.open('${b.url}', '_blank', 'noopener,noreferrer')">${b.name}</button>`
+  ).join("");
+}
+
+
+
+
+
+/* ===== 表示ON/OFF ===== */
+function enabled(key){
+  return document.querySelector(`input[data-key="${key}"]`).checked;
+}
+
+/* ===== スクロール ===== */
+function scrollSpan(text, duration, blink){
+  const cls = blink ? "blink" : "";
+  return `
+    <div class="scroll">
+      <span class="${cls}" style="animation-duration:${duration}s">
+        ${text}
+      </span>
+    </div>
+  `;
+}
+
+/* ===== テキスト生成 ===== */
+function buildText(d){
+  let t=[];
+
+  if(enabled("uni")) t.push(`大学共通：${d.uni}`);
+  if(enabled("naka")) t.push(`中百舌鳥C：${d.naka}`);
+  if(enabled("sug")) t.push(`杉本C：${d.sug}`);
+  if(enabled("mori")) t.push(`森之宮C：${d.mori}`);
+
+  if(enabled("club")){
+    if(!d.clubList || d.clubList.length === 0){
+      t.push("シネマクラブの活動予定はありません");
+    } else {
+      d.clubList.forEach((item, idx) => {
+        if(!item.content) return;
+        t.push(
+          `活動${idx+1}：${item.content}` +
+          (item.time ? ` / ${item.time}` : "") +
+          (item.place ? ` / ${item.place}` : "") +
+          (item.need ? ` / ${item.need}` : "") +
+          (item.note ? ` / ${item.note}` : "")
+        );
+      });
+    }
+  }
+  return t.join(" ／ ");
+}
+
+/* ===== 今日 & 1週間 ===== */
+function render(){
+  if(!allData || !allData.length) return;
+  renderToday();
+  renderWeek();
+}
+function renderToday(){
+  const todayStr = new Date().toDateString();
+  const todayData = allData.find(d =>
+    new Date(d.dateISO).toDateString() === todayStr
+  ) || allData[0];
+
+  const text = buildText(todayData) || "";
+  const durationSec = Math.max(10, Math.min(30, Math.ceil(text.length / 4)));
+
+  today.innerHTML = `
+    <div class="cookie">
+      <h3>今日の予定</h3>
+      <strong>${todayData.month}/${todayData.day}（${todayData.week}）</strong>
+      ${scrollSpan(text, durationSec, (todayData.uni||"").includes("試験") || (todayData.naka||"").includes("試験")||(todayData.uni||"").includes("テスト") || (todayData.naka||"").includes("共テ"))}
+    </div>
+  `;
+  
+  const span = today.querySelector(".scroll span");
+  span.style.animationIterationCount = "infinite";
+}
+
+function renderWeek(){
+  if(!allData || !allData.length) return;
+  weekIndex = weekIndex % allData.length;
+
+  if(weekTimer) clearTimeout(weekTimer);
+
+  const d = allData[weekIndex];
+  const text = buildText(d);
+
+  week.innerHTML = `
+    <div class="cookie">
+      <h3>1週間の予定</h3>
+      <strong>${d.month}/${d.day}（${d.week}）</strong>
+      ${scrollSpan(text, 1, d.uni.includes("試験") || d.naka.includes("試験")||d.uni.includes("テスト") || d.naka.includes("共テ"))}
+    </div>
+  `;
+
+  const span = week.querySelector(".scroll span");
+  const speed = 100;
+  const distance = span.scrollWidth + week.querySelector(".scroll").clientWidth;
+  const durationSec = Math.max(6, distance / speed);
+
+  span.style.animationDuration = durationSec + "s";
+  span.style.animationIterationCount = "1";
+
+  span.addEventListener("animationend", () => {
+    weekTimer = setTimeout(() => {
+      weekIndex = (weekIndex + 1) % allData.length;
+      renderWeek();
+    }, 1000);
+  }, { once: true });
+}
+
+/* ===== タブ切替 ===== */
+function showTab(tab){
+  document.getElementById("uniArea").style.display  = (tab === 'uni') ? 'block' : 'none';
+  document.getElementById("nakaArea").style.display = (tab === 'naka') ? 'block' : 'none';
+  document.getElementById("moriArea").style.display = (tab === 'mori') ? 'block' : 'none';
+  document.getElementById("clubArea").style.display = (tab === 'club') ? 'block' : 'none';
+
+  document.getElementById("tabUni").className  = (tab === 'uni') ? 'tab-active' : 'tab-inactive';
+  document.getElementById("tabNaka").className = (tab === 'naka') ? 'tab-active' : 'tab-inactive';
+  document.getElementById("tabMori").className = (tab === 'mori') ? 'tab-active' : 'tab-inactive';
+  document.getElementById("tabClub").className = (tab === 'club') ? 'tab-active' : 'tab-inactive';
+}
+
+/* ===== 共通カレンダー生成 ===== */
+function buildCalendarHtml({
+  title,
+  subtitle,
+  year,
+  month,
+  markFunc,
+  moveFunc,
+  openFunc,
+  legend
+}){
+  let html = `
+  <div class="cookie">
+    <h3>${title}</h3>
+    <h3>${subtitle}</h3>
+    <div class="calendar-nav">
+      <button onclick="${moveFunc}(-1)">◀</button>
+      <strong>${year}年 ${month}月</strong>
+      <button onclick="${moveFunc}(1)">▶</button>
+    </div>
+    <div class="calendar-grid">
+  `;
+
+  ["日","月","火","水","木","金","土"].forEach(d=> html+=`<div class="day-name">${d}</div>`);
+
+  const first = new Date(year, month-1, 1);
+  for(let i=0;i<first.getDay();i++) html+=`<div></div>`;
+
+  const last = new Date(year, month, 0).getDate();
+  for(let d=1; d<=last; d++){
+    const info = calendarData.find(x =>
+      x.year === year &&
+      x.month === month &&
+      x.day === d
+    );
+
+    const mark = markFunc(info);
+
+    const cellDate = new Date(year, month-1, d);
+    const isToday = cellDate.toDateString() === new Date().toDateString();
+    const isHoliday = info && info.week && info.week.includes("祝");
+    const isSun = cellDate.getDay() === 0;
+    const isSat = cellDate.getDay() === 6;
+
+    const cls = isToday ? "cal-cell cal-today" :
+              (isHoliday || isSun) ? "cal-cell cal-sun" :
+              isSat ? "cal-cell cal-sat" :
+              "cal-cell";
+
+    html += `
+      <div class="${cls}" onclick="${openFunc}(${year}, ${month}, ${d})">
+        ${d}
+        ${isToday ? `<span class="today-label">本日</span>` : ''}
+        <div>${mark}</div>
+      </div>
+    `;
+  }
+
+  html += `</div>
+    <div class="legend">
+      ${legend}
+    </div>
+  </div>`;
+
+  return html;
+}
+
+/* ===== 学事記号生成 ===== */
+function parseUniMarks(text){
+  if(!text) return [];
+  const parts = String(text).split(",").map(s=>s.trim()).filter(Boolean);
+  const marks = [];
+  parts.forEach(p=>{
+    if(/授業日/.test(p)) marks.push("A");
+    if(/祝日授業/.test(p)) marks.push("B");
+    if(/テスト|期末試験/.test(p)) marks.push("C");
+    if(/補講/.test(p)) marks.push("D");
+    if(/授与式|入学式/.test(p)) marks.push("式典");
+    if(/入試/.test(p)) marks.push("E");
+    if(!/授業日|祝日授業|テスト|期末試験|補講|授与式|入学式|入試/.test(p)){
+      marks.push("★");
+    }
+  });
+  return [...new Set(marks)];
+}
+
+function parseCampusMark(text, mark){
+  if(!text) return [];
+  const parts = String(text).split(",").map(s=>s.trim()).filter(Boolean);
+  return parts.length ? [mark] : [];
+}
+
+/* ===== 中百舌鳥カレンダー ===== */
+function renderNakaCalendar(){
+  if(!calendarData || !calendarData.length){
+    calendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+
+  const base = new Date();
+  base.setMonth(base.getMonth()+nakaOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+
+  const html = buildCalendarHtml({
+    title: "中百舌鳥キャンパス活動可能日概要",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "nakaMove",
+    openFunc: "openNakaModal",
+    markFunc: (info)=>{
+      const status = info ? (info.status||"") : "";
+      const uniMarks = parseUniMarks(info ? info.uniText : "");
+      const nakaN = parseCampusMark(info ? info.nakaText : "", "N");
+      const marks = [];
+      if(status) marks.push(status);
+      marks.push(...uniMarks);
+      marks.push(...nakaN);
+      return marks.length ? marks.join("") : "";
+    },
+    legend: ["～記号の説明（詳しくは日付をクリック）～",
+    "〇=9:00〜21:00 / ●=18:30〜21:00（部室は9:00〜21:00可） ",
+    " ◇=9:00〜21:00（テスト期間） / ◆=18:30〜21:00（部室は9:00〜21:00可・テスト期間）",
+    " △=9:00〜21:00（静寂な活動のみ可／一部施設使用不可） / ▲=18:30〜21:00（部室は9:00〜21:00可／静寂な活動のみ可）",
+    " ×=終日使用禁止 / ！=今後の情報に注意 / ★=大学全体学事予定あり / ?=未定",
+    " A=授業日 / B=祝日授業 / C=テスト / D=補講 / 式典=授与式・入学式 / E=入試 / N=中百舌鳥C学事"].join("<br>")
+  });
+
+  calendar.innerHTML = html;
+}
+
+function openNakaModal(year, month, day){
+  const info = calendarData.find(x =>
+    x.year === year && x.month === month && x.day === day
+  );
+
+  const mark = info ? info.status : "";
+  const timeText = statusText(mark) || "不明";
+
+  const fmt = (title, text) => {
+    if(!text) return "";
+    return `
+      <div class="modal-section">
+        <strong>${title}</strong>
+        ${text.replace(/\n/g, "<br>")}
+      </div>
+    `;
+  };
+
+  let html = "";
+
+  html += `
+    <div class="modal-section">
+      <strong>活動可能時間</strong>
+      ${timeText}
+    </div>
+  `;
+
+  const nakaText = info ? (info.nakaText||"") : "";
+  const uniText = info ? (info.uniText||"") : "";
+
+  html += `<div class="modal-divider"></div>`;
+  html += fmt("中百舌鳥C 学事日程", nakaText || "予定がありません");
+
+  html += `<div class="modal-divider"></div>`;
+  html += fmt("大学全体 学事日程", uniText || "予定がありません");
+
+  modalDate.textContent = `${year}/${month}/${day}（${info ? info.week : ""}）`;
+  modalStatus.innerHTML = html;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function nakaMove(v){
+  nakaOffset = Math.min(6, Math.max(-6, nakaOffset + v));
+  renderNakaCalendar();
+}
+
+/* ===== 大学カレンダー ===== */
+function renderUniCalendar(){
+  if(!calendarData || !calendarData.length){
+    uniCalendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+
+  const base = new Date();
+  base.setMonth(base.getMonth()+uniOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+
+  const html = buildCalendarHtml({
+    title: "大学全体 学事日程",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "uniMove",
+    openFunc: "openUniModal",
+    markFunc: (info)=>{
+      const uniMarks = parseUniMarks(info ? info.uniText : "");
+      const nakaN = parseCampusMark(info ? info.nakaText : "", "N");
+      const sugiS = parseCampusMark(info ? info.sugiText : "", "S");
+      const moriM = parseCampusMark(info ? info.moriText : "", "M");
+      const marks = [...uniMarks, ...nakaN, ...sugiS, ...moriM];
+      return marks.length ? marks.join(",") : "ー";
+    },
+    legend: ["～記号の説明（詳しくは日付をクリック）～",
+    "A=授業日 / B=祝日授業 / C=テスト / D=補講 / 式典=授与式・入学式 / E=入試",
+    "★=その他の大学全体学事 / N=中百舌鳥C学事 / S=杉本C学事 / M=森之宮C学事"].join("<br>")
+  });
+
+  uniCalendar.innerHTML = html;
+}
+
+function openUniModal(year, month, day){
+  const info = calendarData.find(x =>
+    x.year === year && x.month === month && x.day === day
+  );
+
+  if(!info){
+    modalDate.textContent = `${year}/${month}/${day}`;
+    modalStatus.textContent = "情報がありません";
+    document.getElementById("modal").style.display = "flex";
+    return;
+  }
+
+  const block = (label, text) => `
+    <div class="modal-section">
+      <strong>${label}</strong>
+      ${text ? text.replace(/\n/g,"<br>") : "予定はありません"}
+    </div>
+  `;
+
+  let html = "";
+  html += block("大学全体", info.uniText);
+  html += `<div class="modal-divider"></div>`;
+  html += block("中百舌鳥C", info.nakaText);
+  html += `<div class="modal-divider"></div>`;
+  html += block("杉本C", info.sugiText);
+  html += `<div class="modal-divider"></div>`;
+  html += block("森之宮C", info.moriText);
+
+  modalDate.textContent = `${year}/${month}/${day}（${info.week || ""}）`;
+  modalStatus.innerHTML = html;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function uniMove(v){
+  uniOffset = Math.min(6, Math.max(-6, uniOffset + v));
+  renderUniCalendar();
+}
+
+/* ===== 森之宮カレンダー ===== */
+function renderMoriCalendar(){
+  if(!calendarData || !calendarData.length){
+    moriCalendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+
+  const base = new Date();
+  base.setMonth(base.getMonth()+moriOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+
+  const html = buildCalendarHtml({
+    title: "森之宮C 学事日程",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "moriMove",
+    openFunc: "openMoriModal",
+    markFunc: (info)=>{
+      if(!info) return "ー";
+      const uniMarks = parseUniMarks(info.uniText || "");
+      const moriMarks = parseCampusMark(info.moriText || "", "M");
+      // N/S を含む可能性があるので除外
+      const filtered = [...uniMarks, ...moriMarks].filter(x => x !== "N" && x !== "S");
+      return filtered.length ? filtered.join("") : "ー";
+    },
+
+    legend: ["～記号の説明（詳しくは日付をクリック）～",
+    "A=授業日 / B=祝日授業 / C=テスト / D=補講日 / 式典=授与式・入学式 / E=入試",
+    "★=その他の大学全体学事 / M=森之宮C学事"].join("<br>")
+  });
+
+  moriCalendar.innerHTML = html;
+}
+
+function openMoriModal(year, month, day){
+  const info = calendarData.find(x =>
+    x.year === year && x.month === month && x.day === day
+  );
+
+  const uniText = info ? info.uniText : "";
+  const moriText = info ? info.moriText : "";
+
+  let html = "";
+
+  html += `<div class="modal-section"><strong>大学全体学事日程</strong>${uniText ? uniText.replace(/\n/g,"<br>") : "予定がありません"}</div>`;
+  html += `<div class="modal-divider"></div>`;
+  html += `<div class="modal-section"><strong>森之宮C予定</strong>${moriText ? moriText.replace(/\n/g,"<br>") : "予定がありません"}</div>`;
+
+  modalDate.textContent = `${year}/${month}/${day}（${info ? info.week : ""}）`;
+  modalStatus.innerHTML = html;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function moriMove(v){
+  moriOffset = Math.min(6, Math.max(-6, moriOffset + v));
+  renderMoriCalendar();
+}
+
+/* ===== 部活カレンダー ===== */
+/* ===== 部活カレンダー ===== */
+function renderClubCalendar(){
+  const base = new Date();
+  base.setMonth(base.getMonth() + clubOffset);
+
+  const year = base.getFullYear();
+  const month = base.getMonth() + 1;
+
+  const html = buildCalendarHtml({
+    title: "部活動スケジュール",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "clubMove",
+    openFunc: "openClubModal",
+    markFunc: (info)=>{
+      // カレンダー用の部活情報を参照（calendarData ではなく clubCalData）
+      const clubInfo = clubCalData.find(x => x.year === info.year && x.month === info.month && x.day === info.day);
+
+      const clubMark = (clubInfo && clubInfo.clubList && clubInfo.clubList.length > 0) ? ["●"] : [];
+      const uniMarks = parseUniMarks(info ? info.uniText : "");
+      const nakaN = parseCampusMark(info ? info.nakaText : "", "N");
+      const moriM = parseCampusMark(info ? info.moriText : "", "M");
+
+      const marks = [...clubMark, ...uniMarks, ...nakaN, ...moriM];
+      return marks.length ? marks.join(",") : "ー";
+    },
+    legend: [
+      "～記号の説明（詳しくは日付をクリック）～",
+      "●=部活予定あり / ー=学事、部活動ともに予定なし",
+      "A=授業日 / B=祝日授業 / C=テスト / D=補講 / 式典=学位授与式・入学式 / E=入試 / ★=その他の大学全体学事",
+      "N=中百舌鳥Cの学事 / M=森之宮Cの学事"
+    ].join("<br>")
+  });
+
+  document.getElementById("clubCalendar").innerHTML = html;
+}
+
+function openClubModal(year, month, day){
+  const infoCal  = calendarData.find(x => x.year === year && x.month === month && x.day === day);
+  const infoClub = clubCalData.find(x => x.year === year && x.month === month && x.day === day);
+
+  const uniText  = infoCal ? infoCal.uniText : "";
+  const nakaText = infoCal ? infoCal.nakaText : "";
+  const moriText = infoCal ? infoCal.moriText : "";
+  const nakaStatus = infoCal ? infoCal.status : "";
+
+  const clubList = infoClub ? infoClub.clubList : [];
+
+  if(!uniText &&!nakaText &&!moriText &&!nakaStatus&& (!clubList || clubList.length === 0)){
+    modalDate.textContent = `${year}/${month}/${day}`;
+    modalStatus.textContent = "この日の活動はありません";
+    document.getElementById("modal").style.display = "flex";
+    return;
+  }
+
+  // ----------------------------
+  // ページング設定
+  // ----------------------------
+  let page = 0;
+  let pageSize = 5;
+  const pageOptions = [1,5,10,20,50,100];
+
+  const getMaxPage = () => Math.max(0, Math.ceil(clubList.length / pageSize) - 1);
+
+  // ----------------------------
+  // モーダル本文を作る関数
+  // ----------------------------
+  const render = () => {
+    let html = "";
+
+    // 2) 大学の学事日程
+    html += `<div class="modal-section"><strong>大学全体学事日程</strong><br>${uniText ? uniText.replace(/\n/g,"<br>") : "大学全体の予定はありません"}</div>`;
+    html += `<div class="club-divider">────────────</div>`;
+
+    // 3) 中百舌鳥C 活動可能時間
+    html += `<div class="modal-section"><strong>中百舌鳥C 活動可能時間</strong><br>${nakaStatus ? statusText(nakaStatus) : "中百舌鳥Cの活動情報はありません"}</div>`;
+    html += `<div class="club-divider">────────────</div>`;
+
+    // 4) 中百舌鳥C 学事日程
+    html += `<div class="modal-section"><strong>中百舌鳥C 学事日程</strong><br>${nakaText ? nakaText.replace(/\n/g,"<br>") : "中百舌鳥Cの予定はありません"}</div>`;
+    html += `<div class="club-divider">────────────</div>`;
+
+    // 5) 森之宮C 学事日程
+    html += `<div class="modal-section"><strong>森之宮C 学事日程</strong><br>${moriText ? moriText.replace(/\n/g,"<br>") : "森之宮Cの予定はありません"}</div>`;
+
+    // 6) 太線
+    html += `<div class="club-divider">────────────────────────</div>`;
+
+    // 7) シネマクラブの活動
+    html += `<div class="modal-section"><strong>シネマクラブの活動</strong></div>`;
+    if(clubList.length === 0){
+      html += `<div class="modal-section">シネマクラブの活動はありません</div>`;
+    }
+    // 8〜9) ページ表示 + 表示件数 + 前へ/次へ（統合）
+if(clubList.length > 0){
+  const maxPage = getMaxPage();
+  const total = clubList.length;
+
+  html += `
+    <div class="paging-area">
+      <div class="paging-row">
+        <span class="paging-info">ページ ${page+1}/${maxPage+1}（合計 ${total}件）</span>
+      </div>
+
+      <div class="paging-row">
+        <span class="paging-info">表示件数：</span>
+        <select id="pageSizeSelect">
+          ${pageOptions.map(v => `<option value="${v}" ${v===pageSize?'selected':''}>${v}</option>`).join("")}
+        </select>
+
+        <button id="prevBtn" class="paging-btn" ${page<=0 ? "disabled" : ""}>◀ 前へ</button>
+        <button id="nextBtn" class="paging-btn" ${page>=maxPage ? "disabled" : ""}>次へ ▶</button>
+      </div>
+    </div>
+  `;
+}
+
+    // 10) 部活内容（表示件数に応じる）
+    if(clubList.length > 0){
+      const pageSizeElem = document.getElementById("pageSizeSelect");
+      const pageSize = pageSizeElem ? Math.max(1, Number(pageSizeElem.value)) : 5;
+      const start = page * pageSize;
+      const end = start + pageSize;
+      const listToShow = clubList.slice(start, end);
+
+      listToShow.forEach((it, idx) => {
+        if(!it.content) return;
+        const lines = [];
+        // 活動内容：
+        lines.push(`活動内容：${it.content}`);
+        // 活動時間：
+        if(it.time) lines.push(`活動時間：${it.time}`);
+        // 活動場所：
+        if(it.place) lines.push(`活動場所：${it.place}`);
+        // 必要人員：
+        if(it.need) lines.push(`必要人員：${it.need}`);
+        // 備考：
+        if(it.note) lines.push(`備考：${it.note}`);
+
+    html += `
+      <div class="club-card">
+        <div class="club-card-title"><strong>活動内容${start + idx + 1}</strong></div>
+        <div class="club-card-body">${lines.join("\n")}</div>
+      </div>
+    `;
+  });
+}
+    return html;
+  };
+
+  // 初回表示
+  modalDate.textContent = `${year}/${month}/${day}`;
+  modalStatus.innerHTML = render();
+  document.getElementById("modal").style.display = "flex";
+
+  // ----------------------------
+  // ボタンイベント設定
+  // ----------------------------
+  const bindEvents = () => {
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const pageSizeSelect = document.getElementById("pageSizeSelect");
+
+    if(prevBtn){
+      prevBtn.addEventListener("click", () => {
+        if(page > 0){
+          page--;
+          modalStatus.innerHTML = render();
+          bindEvents();
+        }
+      });
+    }
+
+    if(nextBtn){
+      nextBtn.addEventListener("click", () => {
+        const maxPage = getMaxPage();
+        if(page < maxPage){
+          page++;
+          modalStatus.innerHTML = render();
+          bindEvents();
+        }
+      });
+    }
+
+    if(pageSizeSelect){
+      pageSizeSelect.addEventListener("change", (e) => {
+        pageSize = Number(e.target.value);
+        page = 0; // ページリセット
+        modalStatus.innerHTML = render();
+        bindEvents();
+      });
+    }
+  };
+
+  bindEvents();
+}
+
+function clubMove(v){
+  clubOffset = Math.min(6, Math.max(-6, clubOffset + v));
+  renderClubCalendar();
+}
+
+
+/* ===== 既存のステータス判定 ===== */
+function statusText(s){
+  if(!s) return "";
+  s = String(s).trim();
+  s = s.replace(/[○〇]/g, "〇");
+  s = s.replace(/[xX✕✖]/g, "×");
+  s = s.replace(/[?？]/g, "?");
+
+  const main = s.match(/[〇●◇◆△▲×]/g) || [];
+  const note = s.match(/[!！]/g) || [];
+
+  let mainText = "";
+  if(main.includes("〇")) mainText = "9:00〜21:00";
+  else if(main.includes("●")) mainText = "18:30〜21:00（部室は9:00〜21:00可）";
+  else if(main.includes("◇")) mainText = "9:00〜21:00（テスト期間）";
+  else if(main.includes("◆")) mainText = "18:30〜21:00（部室は9:00〜21:00可・テスト期間）";
+  else if(main.includes("△")) mainText = "9:00〜21:00（静寂な活動のみ可／一部施設使用不可）";
+  else if(main.includes("▲")) mainText = "18:30〜21:00（部室は9:00〜21:00可／静寂な活動のみ可）";
+  else if(main.includes("×")) mainText = "終日使用禁止";
+  else if(main.includes("?")) mainText = "未定";
+
+  const noteText = note.length ? "★今後の情報に注意★" : "";
+  return [mainText, noteText].filter(x => x).join(" / ");
+}
+
+
+
+/* ===== モーダル ===== */
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+  // これを入れることで「閉じる」すると毎回初期状態に戻る
+  modalStatus.innerHTML = "";
+}
+
+/* ===== 自動切替 ===== */
+window.onload = () => {
+  load();
+  scheduleMidnightReload();
+
+  scheduleMidnightReload();
+  runGAS("getButtonData", "A", true).then(renderLinks);
+  refreshRoomStatus();
+};
+
+
+
+
+
+ //===== 入退室処理 =====
+ function updateRoomUI(status){
+  document.getElementById("roomCount").textContent = status.count;
+
+  const enterBtn = document.getElementById("enterBtn");
+  const exitBtn  = document.getElementById("exitBtn");
+
+  if(status.myStatus === "in"){
+    enterBtn.disabled = true;
+    exitBtn.disabled  = false;
+  }else{
+    enterBtn.disabled = false;
+    exitBtn.disabled  = true;
+  }
+}
+
+function enterRoom(){
+  runGAS("enterRoom", visitId).then(refreshRoomStatus);
+}
+
+function exitRoom(){
+  runGAS("exitRoom", visitId).then(refreshRoomStatus);
+}
+
+function refreshRoomStatus(){
+  runGAS("getRoomStatus", visitId).then(updateRoomUI);
+}
+
+setInterval(refreshRoomStatus, 5 * 60 * 1000);
+
+
+</script>
+
+</body>
+</html>
