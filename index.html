@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>シネマクラブ｜カレンダー</title>
+<meta charset="utf-8">
 <style>
 body{
   font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
@@ -924,68 +922,41 @@ const isGAS = typeof google !== "undefined"
  * GitHubなら mock 関数
  */
 function runGAS(method, ...args){
-  return new Promise((resolve, reject)=>{
-    if(isGAS){
+  if(isGAS){
+    return new Promise((resolve, reject)=>{
       google.script.run
         .withSuccessHandler(resolve)
         .withFailureHandler(reject)[method](...args);
-    }else{
-      // GitHub用モック
-      mockAPI(method, ...args).then(resolve).catch(reject);
-    }
-  });
-}
-/* ================================
-   GitHub 用ダミーAPI
-================================ */
-
-function mockAPI(method){
-  switch(method){
-
-    case "getScheduleData":
-      return Promise.resolve({
-        schedule: [
-          {
-            dateISO: "2026-02-07",
-            month: 2,
-            day: 7,
-            week: "金",
-            uni: "通常授業",
-            naka: "〇",
-            sug: "",
-            mori: "",
-            clubList: [
-              { content: "上映会", time: "18:00-20:00", place: "部室" }
-            ]
-          }
-        ],
-        club: []
-      });
-
-    case "getCalendarData":
-      return Promise.resolve({
-        scheduleCal: [],
-        clubCal: []
-      });
-
-    case "getButtonData":
-      return Promise.resolve([
-        { name: "公式サイト", url: "https://script.google.com/macros/s/AKfycbwHiwDdNc0TvJ4wcvcx7EMfJsLpPfqZMs0a_5djjiwGJsWUGHqNbOXnotA5S2p2Rd9K/exec", target: "A" }
-      ]);
-
-    case "getRoomStatus":
-      return Promise.resolve({
-        count: 3,
-        myStatus: "out"
-      });
-    case "recordViewer":
-    return Promise.resolve(true);
-
-    default:
-      return Promise.resolve(null);
-
+    });
+  }else{
+    // GitHub Pages
+    const paramMap = {
+      getScheduleData: {},
+      getCalendarData: {},
+      getButtonData: { target: args[0], active: args[1] },
+      getRoomStatus: { visitId: args[0] },
+      enterRoom: { visitId: args[0] },
+      exitRoom: { visitId: args[0] },
+      recordViewer: { page: args[0], visitId: args[1] }
+    };
+    return fetchAPI(method, paramMap[method] || {});
   }
 }
+
+const GAS_API = "https://script.google.com/macros/s/AKfycbz-hHL28w2EL_xpDsja9AAA2IdHHMS8ENT6JiBo8by3jM6VPMHVo7xN0CoWKF3trAaj/exec";
+
+function fetchAPI(action, params = {}){
+  const url = new URL(GAS_API);
+  url.searchParams.set("action", action);
+
+  Object.entries(params).forEach(([k,v])=>{
+    url.searchParams.set(k, v);
+  });
+
+  return fetch(url.toString())
+    .then(res => res.json());
+}
+
 
 
 // ページを開いたら記録
@@ -1780,3 +1751,4 @@ setInterval(refreshRoomStatus, 5 * 60 * 1000);
 
 </body>
 </html>
+
