@@ -968,7 +968,7 @@ function mockAPI(method){
 
     case "getButtonData":
       return Promise.resolve([
-        { name: "公式サイト", url: "https://example.com", target: "A" }
+        { name: "公式サイト", url: "https://script.google.com/macros/s/AKfycbwHiwDdNc0TvJ4wcvcx7EMfJsLpPfqZMs0a_5djjiwGJsWUGHqNbOXnotA5S2p2Rd9K/exec", target: "A" }
       ]);
 
     case "getRoomStatus":
