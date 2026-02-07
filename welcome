@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>シネマクラブ新歓カレンダー</title>
+<style>
+/* =====================
+   ベース
+===================== */
+body{
+  font-family: "Hiragino Maru Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+  background:#ffffff;
+  color:#1b1b1b;
+  margin:0;
+}
+
+.container{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* =====================
+   タイトル
+===================== */
+.app-title{
+  background:#ffffff;
+  border-radius:22px;
+  padding:12px 22px;
+  margin:18px auto;
+  text-align:center;
+
+  border:1px solid #e9e4d6;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+
+  font-weight:800;
+  font-size:24px;
+  letter-spacing:.04em;
+}
+
+/* =====================
+   共通カード
+===================== */
+.cookie{
+  background:#fff;
+  border-radius:32px;
+  padding:20px;
+  margin:14px 0;
+
+  border:1px solid #e9e4d6;
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.06),
+    inset 0 3px 5px rgba(255,255,255,.7);
+}
+
+.cookie h3{
+  margin:0 0 8px;
+}
+
+/* 日付強調 */
+.cookie > strong{
+  display:inline-block;
+  font-size:1.25em;
+  margin:6px 0 8px;
+}
+
+/* =====================
+   時刻
+===================== */
+#time{
+  font-size:1.6em;
+  font-weight:bold;
+  margin-left:6px;
+}
+
+/* =====================
+   更新ボタン
+===================== */
+.reload-btn{
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  border-radius: 20px;
+  border: 1px solid #d8c08a;
+
+  background: linear-gradient(
+    to bottom,
+    #cfa24a,
+    #b57a00
+  );
+
+  color: #ffffff;
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.12),
+    inset 0 2px 4px rgba(255,255,255,.35);
+
+  transition:
+    background .2s ease,
+    box-shadow .2s ease,
+    transform .1s ease;
+}
+
+.reload-btn:hover{
+  background: linear-gradient(
+    to bottom,
+    #ddb45c,
+    #c98a0a
+  );
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.18),
+    inset 0 2px 4px rgba(255,255,255,.45);
+}
+
+.reload-btn:active{
+  transform: translateY(1px);
+  box-shadow:
+    0 3px 6px rgba(0,0,0,.18),
+    inset 0 2px 4px rgba(255,255,255,.25);
+}
+
+/* =====================
+   スクロール
+===================== */
+.scroll{
+  overflow:hidden;
+  white-space:nowrap;
+  width:100%;
+}
+
+.scroll span{
+  display:inline-block;
+  padding-left:100%;
+  animation-name:scrollText;
+  animation-timing-function:linear;
+  font-size:20px;
+}
+
+@keyframes scrollText{
+  from{ transform:translateX(0); }
+  to{ transform:translateX(-100%); }
+}
+
+/* =====================
+   カレンダー
+===================== */
+.calendar-card{
+  margin:16px 0;
+  padding:12px;
+  border-radius:28px;
+
+  background:#fff;
+  border:2px solid #d8c08a;
+  box-shadow:0 8px 18px rgba(0,0,0,.06);
+}
+
+.calendar-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.calendar-nav button{
+  background:#1b1b1b;
+  color:#fff;
+  border:none;
+  border-radius:16px;
+  padding:4px 12px;
+  font-size:18px;
+  cursor:pointer;
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  text-align:center;
+  font-size:12px;
+}
+
+.day-name{
+  font-weight:bold;
+  color:#444;
+}
+
+.cal-cell{
+  background:#fff;
+  border-radius:16px;
+  padding:8px 4px;
+  border:1px solid #f0f0f0;
+  cursor:pointer;
+}
+
+.cal-sun{ background:#fff4f4; }
+.cal-sat{ background:#f4f7ff; }
+
+/* 今日セルの点滅 */
+@keyframes blinkToday {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.cal-today{
+  border:2px solid #b57a00;
+  animation: blinkToday 1.2s infinite;
+}
+
+
+.today-label{
+  display:block;
+  font-size:10px;
+  margin-top:4px;
+  color:#b57a00;
+  font-weight:bold;
+}
+
+.mark{
+  margin-top:4px;
+  font-weight:bold;
+}
+
+.legend{
+  margin-top:10px;
+  font-size:12px;
+  color:#555;
+}
+
+/* ===== モーダル全体 ===== */
+.modal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+/* ===== モーダル枠 ===== */
+.modal-content{
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 20px;
+  width: 90%;
+  max-width: 420px;
+
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 6px 15px rgba(0,0,0,.25);
+}
+
+/* ===== 日付 ===== */
+.modal-date{
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* ===== 本文（スクロール領域） ===== */
+.modal-body{
+  flex: 1;
+  overflow-y: auto;
+  margin: 10px 0 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 本文テキスト */
+.modal-status{
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color:#333;
+}
+
+/* ===== セクション区切り ===== */
+.modal-section {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.modal-section strong{
+  display: block;
+  margin-bottom: 6px;
+  color:#111;
+}
+
+.modal-divider{
+  border-top: 1px dashed #d8c08a;
+  margin: 14px 0;
+}
+.modal-controls{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+.modal-controls button{
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ===== 戻るボタン（下固定） ===== */
+.modal-back{
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #1b1b1b;
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 20px;
+  cursor: pointer;
+
+  flex-shrink: 0;
+
+  box-shadow:
+    0 6px 10px rgba(0,0,0,.15),
+    inset 0 3px 5px rgba(255,255,255,.35);
+  transition: transform .1s ease, box-shadow .2s ease;
+}
+
+.modal-back:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 14px rgba(0,0,0,.2),
+    inset 0 3px 5px rgba(255,255,255,.45);
+}
+
+.modal-back:active{
+  transform: translateY(0);
+}
+
+/* ===== 部活用 ===== */
+.club-title {
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.club-detail {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 18px;
+  background: #f7f7f7;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.club-divider {
+  margin: 6px 0;
+  color: #999;
+}
+
+.paging-area{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.paging-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.paging-left{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.paging-right{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.paging-left span,
+.paging-left select{
+  font-size: 12px;
+}
+
+.paging-sep{
+  opacity: 0.6;
+}
+
+.paging-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: transform .1s ease, background .2s ease;
+  background:#1b1b1b;
+  color:#fff;
+}
+.paging-btn:hover {
+  transform: translateY(-1px);
+}
+.paging-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.club-card{
+  background: #ffffff;
+  border: 2px solid #d8c08a;
+  border-radius: 20px;
+  padding: 12px;
+  margin: 8px 0;
+  box-shadow:
+    0 6px 10px rgba(0,0,0,.12),
+    inset 0 3px 5px rgba(255,255,255,.4);
+}
+
+.club-card-title{
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.club-card-body{
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+/* 下部リンク（カレンダー直下表示） */
+.link-area{
+  display:none;
+  grid-template-columns: repeat(3, 1fr); /* ← 3列固定 */
+  margin: 12px 15px 0;
+  padding: 10px 0;
+  display:flex;
+  gap: 10px;
+  justify-content:center;
+}
+
+.link-area button{
+  flex: 1 1 120px;
+  border:none;
+  border-radius: 18px;
+  padding: 10px 14px;
+  background: #1b1b1b;
+  color:#fff;
+  font-weight: 800;
+  cursor:pointer;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* =====================
+   デバイス別調整
+===================== */
+
+/* 📱 スマホ */
+@media (max-width: 600px){
+  html{ font-size: 14px; }
+}
+
+/* 📱 iPad 縦 */
+@media (min-width: 601px) and (max-width: 834px){
+  html{ font-size: 15px; }
+}
+
+/* 📱 iPad 横 */
+@media (min-width: 835px) and (max-width: 1024px){
+  html{ font-size: 16px; }
+}
+
+/* 💻 PC 14インチ以内 */
+@media (min-width: 1025px) and (max-width: 1439px){
+  html{ font-size: 16px; }
+}
+
+/* 🖥 PC 14インチ以上 */
+@media (min-width: 1440px){
+  html{ font-size: 17px; }
+}
+
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1 class="app-title">シネマクラブ新歓カレンダー</h1>
+  <button class="reload-btn" onclick="loadWelcome(true)">
+  🔄 再読み込み　最新情報に更新
+  </button>
+
+  <div class="cookie">
+    <strong>ただいまの時刻</strong>
+    <span id="time" class="time"></span><br>
+    <strong>現在の部室人数</strong>
+    <span id="roomCount">取得中…</span>
+  </div>
+
+  <div id="today" class="cookie"></div>
+  <div id="week" class="cookie"></div>
+
+  <div class="calendar-card">
+    <div id="calendar"></div>
+  </div>
+
+  <div id="linkArea" class="link-area"></div>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <div id="modalDate" class="modal-date"></div>
+    <div id="modalStatus"></div>
+    <button id="modalBack" class="modal-back" onclick="closeWelcomeModal()">カレンダーに戻る</button>
+  </div>
+</div>
+
+<script>
+let calendarData = [];
+let clubCalData  = [];
+let offset = 0;
+const time = document.getElementById("time");
+const today = document.getElementById("today");
+const week = document.getElementById("week");
+const calendar = document.getElementById("calendar");
+const linkArea = document.getElementById("linkArea");
+const modal = document.getElementById("modal");
+const modalDate = document.getElementById("modalDate");
+const modalStatus = document.getElementById("modalStatus");
+
+function updateTime(){
+  time.textContent = new Date().toLocaleString();
+}
+setInterval(updateTime,1000);
+updateTime();
+
+// ===== 訪問ID管理（GitHub対応）=====
+const VISIT_KEY = "club_visit_id";
+const PAGE_NAME = "welcome";
+
+function getVisitId(){
+  let id = localStorage.getItem(VISIT_KEY);
+  if(!id){
+    id = crypto.randomUUID();
+    localStorage.setItem(VISIT_KEY, id);
+  }
+  return id;
+}
+
+const visitId = getVisitId();
+const address = "URL"
+
+// ログ送信
+fetch(address, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    page: PAGE_NAME,
+    visitId,
+    ts: Date.now()
+  })
+}).catch(()=>{});
+
+/* ================================
+   GAS / GitHub 両対応ラッパー
+================================ */
+
+const isGAS = typeof google !== "undefined"
+           && google.script
+           && google.script.run;
+
+/**
+ * GASなら google.script.run
+ * GitHubなら mock 関数
+ */
+function runGAS(method, ...args){
+  return new Promise((resolve, reject)=>{
+    if(isGAS){
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)[method](...args);
+    }else{
+      // GitHub用モック
+      mockAPI(method, ...args).then(resolve).catch(reject);
+    }
+  });
+}
+/* ================================
+   GitHub 用ダミーAPI
+================================ */
+
+function mockAPI(method){
+  switch(method){
+
+    case "getScheduleData":
+      return Promise.resolve({
+        schedule: [
+          {
+            dateISO: "2026-02-07",
+            month: 2,
+            day: 7,
+            week: "金",
+            uni: "通常授業",
+            naka: "〇",
+            sug: "",
+            mori: "",
+            clubList: [
+              { content: "上映会", time: "18:00-20:00", place: "部室" }
+            ]
+          }
+        ],
+        club: []
+      });
+
+    case "getCalendarData":
+      return Promise.resolve({
+        scheduleCal: [],
+        clubCal: []
+      });
+
+    case "getButtonData":
+      return Promise.resolve([
+        { name: "公式サイト", url: "https://example.com", target: "A" }
+      ]);
+
+    case "getRoomStatus":
+      return Promise.resolve({
+        count: 3,
+        myStatus: "out"
+      });
+    case "recordViewer":
+    return Promise.resolve(true);
+
+    default:
+      return Promise.resolve(null);
+
+  }
+}
+
+
+// ページを開いたら記録
+runGAS("recordViewer", PAGE_NAME, visitId);
+
+
+
+
+
+/* ===== データ読み込み ===== */
+async function loadWelcome(force=false){
+  try{
+    const res = await fetch(address);
+    const d = await res.json();
+
+    calendarData = d.scheduleCal || [];
+    clubCalData  = d.clubCal || [];
+
+    renderWelcomeCalendar();
+    renderWelcomeToday();
+    renderWelcomeWeek();
+    renderWelcomeLinks();
+  }catch(e){
+    console.error(e);
+  }
+}
+
+
+
+loadWelcome();
+
+// リンクボタンの内容
+function renderLinks(buttons){
+  const list = (buttons || [])
+    .filter(item => item.name && item.url && item.target)
+    .filter(item => String(item.target || "").trim().toUpperCase().includes("B"));
+
+  if(!list.length){
+    linkArea.style.display = "none";
+    return;
+  }
+
+  linkArea.style.display = "flex";
+  linkArea.innerHTML = list.map(b =>
+    `<button onclick="window.open('${b.url}', '_blank', 'noopener,noreferrer')">${b.name}</button>`
+  ).join("");
+}
+
+
+
+function scrollSpan(text, duration, blink=false){
+  const cls = blink ? "blink" : "";
+  return `
+    <div class="scroll">
+      <span class="${cls}" style="animation-duration:${duration}s">
+        ${text}
+      </span>
+    </div>
+  `;
+}
+
+function buildTodayText(d){
+  const uni = d.uniText || "予定なし";
+
+  const clubDay = clubCalData.find(x =>
+    x.year === d.year &&
+    x.month === d.month &&
+    x.day === d.day
+  );
+
+  const club = buildClubText(clubDay?.clubList || []);
+
+  return `大学：${uni} ／ シネマクラブ新歓：${club}`;
+}
+
+
+function buildClubText(list){
+  const filtered = (list||[]).filter(x=> /新歓|部室開放/.test(x.content));
+  if(filtered.length===0) return "予定なし";
+  const lines = filtered.map((it, idx)=>{
+    const time = it.time || "未定";
+    const place = it.place || "未定";
+    const note = it.note || "特になし";
+    return `内容${idx+1}：${it.content}（時間）${time}（場所）${place}（備考）${note}`;
+  });
+  return lines.join(" ／ ");
+}
+
+function getTodayData(){
+  const todayStr = new Date().toDateString();
+  const todayData = calendarData.find(d => new Date(d.year, d.month-1, d.day).toDateString() === todayStr);
+  return todayData || calendarData[0] || null;
+}
+
+function getWeekData(){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const week = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate()+i);
+    const y = d.getFullYear();
+    const m = d.getMonth()+1;
+    const day = d.getDate();
+    const info = calendarData.find(x=>x.year===y&&x.month===m&&x.day===day);
+    if(info) week.push(info);
+  }
+  return week;
+}
+
+function renderWelcomeToday(){
+  const d = getTodayData();
+  if(!d){
+    today.innerHTML = `<div class="cookie"><strong>今日の予定</strong><div>データがありません</div></div>`;
+    return;
+  }
+  const text = buildTodayText(d);
+  const durationSec = Math.max(10, Math.min(30, Math.ceil(text.length / 4)));
+  today.innerHTML = `
+    <h3 style="margin:0 0 8px 0;">今日の予定</h3>
+    <strong>${d.month}/${d.day}（${d.week}）</strong>
+    ${scrollSpan(text, durationSec)}
+  `;
+  const span = today.querySelector(".scroll span");
+  span.style.animationIterationCount = "infinite";
+}
+
+let weekIndex = 0;
+let weekTimer = null;
+
+function renderWelcomeWeek(){
+  const weekData = getWeekData();
+  if(!weekData.length){
+    week.innerHTML = `<div class="cookie"><h3>1週間の予定</h3><div>データがありません</div></div>`;
+    return;
+  }
+  if(weekTimer) clearTimeout(weekTimer);
+  const d = weekData[weekIndex % weekData.length];
+  const text = buildTodayText(d);
+  week.innerHTML = `
+    <h3 style="margin:0 0 8px 0;">1週間の予定</h3>
+    <strong>${d.month}/${d.day}（${d.week}）</strong>
+    ${scrollSpan(text, 1)}
+  `;
+  const span = week.querySelector(".scroll span");
+  const speed = 100;
+  const distance = span.scrollWidth + week.querySelector(".scroll").clientWidth;
+  const durationSec = Math.max(6, distance / speed);
+  span.style.animationDuration = durationSec + "s";
+  span.style.animationIterationCount = "1";
+  span.addEventListener("animationend", () => {
+    weekTimer = setTimeout(()=>{
+      weekIndex = (weekIndex + 1) % weekData.length;
+      renderWelcomeWeek();
+    }, 1000);
+  }, { once:true });
+}
+
+function renderWelcomeCalendar(){
+  if(!calendarData.length){
+    calendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+  const base = new Date();
+  base.setMonth(base.getMonth()+offset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+  const html = buildCalendarHtml({
+    year, month,
+    moveFunc:"moveWelcomeMonth",
+    openFunc:"openWelcomeModal",
+    markFunc: markWelcomeFunc
+  });
+  calendar.innerHTML = html;
+}
+
+function buildCalendarHtml({year, month, moveFunc, openFunc, markFunc}){
+  let html = `
+    <div class="calendar-nav">
+      <button onclick="${moveFunc}(-1)">◀</button>
+      <strong>${year}年 ${month}月</strong>
+      <button onclick="${moveFunc}(1)">▶</button>
+    </div>
+    <div class="calendar-grid">
+  `;
+  ["日","月","火","水","木","金","土"].forEach(d=> html+=`<div class="day-name">${d}</div>`);
+  const first = new Date(year, month-1, 1);
+  for(let i=0;i<first.getDay();i++) html+=`<div></div>`;
+  const last = new Date(year, month, 0).getDate();
+  for(let d=1; d<=last; d++){
+    const info = calendarData.find(x=>x.year===year && x.month===month && x.day===d);
+    const mark = markFunc(info);
+    const cellDate = new Date(year, month-1, d);
+    const isToday = cellDate.toDateString() === new Date().toDateString();
+    const isSun = cellDate.getDay() === 0;
+    const isSat = cellDate.getDay() === 6;
+    const isHoliday = info && info.week && info.week.includes("祝");
+    const cls = isToday ? "cal-cell cal-today" :
+                (isHoliday || isSun) ? "cal-cell cal-sun" :
+                isSat ? "cal-cell cal-sat" :
+                "cal-cell";
+    html += `
+      <div class="${cls}" onclick="${openFunc}(${year}, ${month}, ${d})">
+        ${d}
+        ${isToday ? `<span class="today-label">本日</span>` : ''}
+        <div class="mark">${mark}</div>
+      </div>
+    `;
+  }
+  html += `</div>
+    <div class="legend">
+      ◇ 記号説明：森=新歓（森之宮C） / 中=新歓（中百舌鳥C） / 特=新歓（その他） / ●=部室開放 / ー=予定なし
+    </div>
+  `;
+  return html;
+}
+
+function markWelcomeFunc(info){
+  if(!info) return "ー";
+  const club = clubCalData.find(x=>x.year===info.year && x.month===info.month && x.day===info.day);
+  const list = club?.clubList || [];
+  let mark = "ー";
+  let has = false;
+  for(const it of list){
+    if(/部室開放/.test(it.content)){
+      mark = "●";
+      has = true;
+      break;
+    }
+  }
+  if(!has){
+    for(const it of list){
+      if(/新歓/.test(it.content)){
+        const place = it.place || "";
+        if(place.includes("森之宮C")) { mark = "森"; has = true; break; }
+        if(place.includes("中百舌鳥C")) { mark = "中"; has = true; break; }
+        mark = "特"; has = true; break;
+      }
+    }
+  }
+  return mark;
+}
+
+function openWelcomeModal(year, month, day){
+  const info = calendarData.find(x=>x.year===year && x.month===month && x.day===day);
+  const club = clubCalData.find(x=>x.year===year && x.month===month && x.day===day);
+  const uniText = info ? (info.uniText||"") : "";
+  const clubList = (club?.clubList || []).filter(x=> /新歓|部室開放/.test(x.content));
+
+  let html = "";
+  html += `<div class="modal-section">
+    <strong>大学の学事日程</strong>
+    ${uniText ? uniText.replace(/\n/g,"<br>") : "予定なし"}
+  </div>`;
+  html += `<div class="modal-divider"></div>`;
+  html += `<div class="modal-section"><strong>活動内容</strong></div>`;
+
+  if(clubList.length === 0){
+    html += `<div class="modal-section">シネマクラブ新歓・部室開放の予定はありません</div>`;
+  } else {
+    clubList.forEach((it, idx)=>{
+      const time = it.time || "未定";
+      const place = it.place || "未定";
+      const note = it.note || "特になし";
+      html += `
+        <div class="modal-section">
+          活動内容：${it.content}<br>
+          時間：${time}<br>
+          場所：${place}<br>
+          備考：${note}
+        </div>
+        ${idx !== clubList.length-1 ? `<div class="modal-divider"></div>` : ""}
+      `;
+    });
+  }
+
+  modalDate.textContent = `${year}/${month}/${day}（${info ? info.week : ""}）`;
+  modalStatus.innerHTML = html;
+  modal.style.display = "flex";
+}
+
+function closeWelcomeModal(){
+  modal.style.display = "none";
+  modalStatus.innerHTML = "";
+}
+
+function moveWelcomeMonth(v){
+  offset = Math.min(6, Math.max(-6, offset + v));
+  renderWelcomeCalendar();
+}
+
+function refreshWelcome(){
+  if(weekTimer){
+    clearTimeout(weekTimer);
+    weekTimer = null;
+  }
+
+  calendarData = [];
+  clubCalData = [];
+  weekIndex = 0;
+  offset = 0;
+
+  loadWelcome(true);
+}
+
+
+  runGAS("getButtonData", "B", true).then(renderLinks);
+  setTimeout(loadRoomStatus, 500);
+  setInterval(loadRoomStatus, 30000); // 30秒ごと
+
+//===== 部室人数表示 ======
+
+  const roomCount = document.getElementById("roomCount");
+
+  function loadRoomStatus(){
+  if(!visitId) return;
+
+  runGAS("getRoomStatus", visitId)
+    .then(res => {
+      if(!res) return;
+      roomCount.textContent = `${res.count} 人`;
+    })
+    .catch(()=>{});
+}
+
+  
+
+
+</script>
+</body>
+</html>
