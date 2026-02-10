@@ -1,432 +1,278 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
+<meta charset="utf-8">
 <style>
-/* =============================
-   カラートークン
-============================= */
-:root {
-  --frame-color: #6a5142;
-  --bg-washi: #fbfaf7;
-  --ink-black: #0b0b0b;
-  --text-white: #ffffff;
-  --led-green: #3cff6a;
+body{
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+  background:#ffffff;
+  color:#1b1b1b;
 }
 
-#loadingScreen {
-  position: fixed;
-  inset: 0;
-  background: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
-  z-index: 20000;
+/* 共通 */
+.cookie{
+  background:#ffffff;
+  border-radius:32px;
+  padding:20px;
+  margin:15px;
+  border:1px solid #e9e4d6;
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.06),
+    inset 0 3px 5px rgba(255,255,255,.7);
 }
 
+h3{ margin-top:0 }
 
+.app-title{
+  background:#ffffff;
+  border-radius: 22px;
+  padding: 12px 22px;
+  display:block;
+  border:1px solid #e9e4d6;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  font-weight:800;
+  letter-spacing:0.04em;
+  font-size: 24px;
+  color:#1b1b1b;
 
-/* =============================
-   全体
-============================= */
-/* =============================
-   全体スクロール修正
-============================= */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;   /* ← 全体スクロールを有効に */
-  -webkit-overflow-scrolling: touch; /* スマホ滑らかスクロール */
-}
-
-body {
-  background: var(--bg-washi);
-  color: #222;
-  font-family: "Hiragino Mincho ProN","Yu Mincho",serif;
-}
-
-.cookie {
-  background: #fff;
-  border: 1.5px solid var(--frame-color);
-  border-radius: 6px;
-  padding: 10px;
-  overflow: visible;  /* ← auto や hidden は避ける */
-}
-
-/* =============================
-   電光掲示板レイアウト
-============================= */
-#board {
-  margin-top: 16px;
-  font-family: 'Courier New', monospace;
-  color: #000;
-}
-
-/* ===== PC基本 ===== */
-.board-head,
-.board-row {
-  display: grid;
-  grid-template-columns:
-    56px       /* ラベル */
-    96px       /* 開始時刻 */
-    72px       /* 所要時間 */
-    minmax(260px, 1fr); /* 作品名 */
-  gap: 6px;
-  align-items: center;
-}
-
-/* ヘッダー */
-.board-head {
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 6px;
-  background: #fff;
-}
-
-/* ラベル */
-.label {
+  /* 中央寄せ */
+  margin: 18px auto;
   text-align: center;
+}
+
+#time{
+  font-size: 1.6em;   /* お好みで 1.4〜2.0em */
   font-weight: bold;
-  background: #fff;
-}
-
-.vertical-line {
-  width: 1px;
-  background: #ccc;
-  height: 100%;
-  margin: 0 4px;
-}
-
-
-/* =============================
-   フリップセル（共通・1セル1行）
-============================= */
-.outer {
-  position: relative;
-  height: 2.2em;
-  background: #000;
-  overflow: hidden;
-  perspective: 800px;
-  border-radius: 4px;
-}
-
-/* フリップ本体 */
-.flap {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(#222, #111, #222);
-  color: #fff;
-  font-weight: bold;
-  text-align: center;
-  white-space: nowrap;
-  backface-visibility: hidden;
-}
-
-/* メイン面 */
-.flap.main {
-  display: flex;
-  align-items: center;  /* 縦中央 */
-  justify-content: center; /* 横中央 */
-  height: 100%;
-  font-weight: bold;
-}
-
-
-/* 上下フラップ（参考コード完全準拠） */
-/* 上下フラップ */
-.flap.top,
-.flap.bottom {
-  clip-path: polygon(0 0,100% 0,100% 50%,0 50%);
-  /* display: none; ← フリップ中は JS 側で制御するので初期非表示は ok */
-  
-  display: flex;                /* 追加 */
-  align-items: center;          /* 縦中央 */
-  justify-content: center;      /* 横中央 */
-  height: 50%;                  /* 上下それぞれ半分 */
-  font-family: inherit;          /* main と同じフォント */
-  font-size: inherit;            /* main と同じサイズ */
-  line-height: inherit;          /* main と同じ高さ */
-  font-weight: inherit;          /* main と同じ太さ */
-}
-
-.flap.top {
-  clip-path: polygon(0 0,100% 0,100% 50%,0 50%);
-  display: none;
-}
-
-.flap.bottom {
-  clip-path: polygon(0 50%,100% 50%,100% 100%,0 100%);
-  display: none;
-}
-
-/* =============================
-   数字用フリップ
-============================= */
-.flap.main,
-.flap.top,
-.flap.bottom {
-  font-family: "Microsoft YaHei", sans-serif; /* 数字用フォント */
-  line-height: 2.2em;  /* 高さに合わせて縦中央揃え */
-  font-weight: bold;
-  text-align: center;
-  font-size: 1rem;     /* main と同じサイズ */
-}
-
-/* 境界線 */
-.gap {
-  position: absolute;
-  top: 50%;
-  width: 100%;
-  height: 1px;
-  background: #000;
-  opacity: .6;
-  z-index: 20;
-}
-
-/* =============================
-   時刻・所要時間
-============================= */
-.time-wrapper {
-  display: flex;
-  align-items: center;
-  height: 2.2em;          /* ← outerと完全一致させる */
-  line-height: 2.2em;     /* ← baselineズレ防止 */
-  gap: 4px;
-}
-
-/* 時刻 */
-.time-wrapper .outer {
-  width: 2.6ch;
-}
-
-/* 所要時間（3桁想定） */
-.outer.duration {
-  width: 3.6ch;
-  height: 2.6em;          /* 明示 */
-  margin-top: 0;
-  margin-bottom: 0;
-  align-self: center;   /* ← flex内で明示 */
-}
-
-.colon,
-.unit {
-  font-weight: bold;
-  color: #000;
-}
-
-.unit {
-  display: inline-flex;   /* ← inline をやめる */
-  align-items: center;    /* ← 縦中央固定 */
-  height: 2.2em;          /* ← outerと同じ */
-  line-height: 2.2em;
-}
-
-
-/* =============================
-   作品名（完全1行制御）
-============================= */
-.outer.title {
-  height: 2.2em;
-  background: #000;
-  position: relative;
-  overflow: hidden;
-}
-
-/* フリップ用（短文） */
-.flap.title-cell {
-  line-height: 2.2em;
-  font-family: "BIZ UDPゴシック", sans-serif;
-  font-weight: bold;
-  text-align: center;
-  font-size: 1rem;     /* main と同じサイズ */
-}
-
-/* スクロール用（長文） */
-.title-scroll {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: center;
-  overflow: hidden;
-  color: #fff;
-  font-family: "BIZ UDPゴシック", sans-serif;
-  font-size: 0.95rem;
-}
-
-.title-scroll span {
-  white-space: nowrap;
-  animation: scrollText 12s linear infinite;
-}
-
-/* 切替 */
-.outer.title.show-scroll .flap-container {
-  display: none;
-}
-.outer.title.show-scroll .title-scroll {
-  display: flex;
-}
-
-/* =============================
-   フリップ中ブラックアウト
-============================= */
-.outer.black .flap {
-  background: #000;
-  color: transparent;
-}
-
-
-
-/* =============================
-   備考スクロール（完全版）
-============================= */
-/* 備考行全体を1行分の高さに */
-.board-notes {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  align-items: center;
-  margin-top: 6px;
-}
-
-.board-notes .scroll {
-  background: #000;               /* 黒背景 */
-  color: #00ff66;                 /* LEDグリーン */
-  padding: 0.3em 0.6em;
-  border-radius: 4px;
-  font-family: "BIZ UDPゴシック", sans-serif;
-  height: 2.2em;                  /* フリップセルと同じ */
-  line-height: 2.2em;             /* 縦中央揃え */
-  box-sizing: border-box;
-  
-  position: relative;              /* 基準 */
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
-
-/* 横スクロール用 span */
-.board-notes .scroll span {
-  position: absolute;
-  left: 0;
-  transform: translateX(var(--start-x));
+  margin-left: 6px;
   display: inline-block;
-  font-family: "BIZ UDPゴシック", sans-serif;
-  white-space: nowrap;
-  will-change: transform;
-  animation-name: scrollText;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-duration: var(--scroll-duration, 15s);
+}
+.controls{
+  margin-top: 10px;
 }
 
-/* 赤点滅モード */
-.board-notes .scroll.red span {
-  color: red;
-  font-weight: bold;
-  animation: blinkRed 1s step-start infinite;
-}
-
-/* =============================
-   アニメーション
-============================= */
-@keyframes scrollText {
-  from { transform: translateX(var(--start-x)); }
-  to   { transform: translateX(var(--end-x)); }
-}
-
-@keyframes blinkRed {
-  50% { opacity: 0; }
-}
-
-/*==============================
-    TTbutton
-==============================*/
-.tt-btn {
-  border-radius: 999px;
-  padding: 6px 14px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.tt-btn.enabled {
-  background: #000;
-  color: #fff;
-}
-
-.tt-btn.disabled {
-  background: #999;
-  color: #fff;
-  cursor: default;
-}
-#timetableHeader {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+.controls label{
+  font-size: 1.1em;      /* 文字サイズ */
+  margin-right: 14px;
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 6px;
 }
 
-#ttDate {
-  text-align: center;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-
-/* =============================
-   タイムテーブル罫線
-============================= */
-#timetable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 8px;
-}
-
-#timetable th,
-#timetable td {
-  border: 1px solid #999;
-  padding: 6px 8px;
-  font-family: "BIZ UDPゴシック", sans-serif;
-  font-size: 0.95rem;
-}
-
-#timetable thead th {
-  background: #f2f2f2;
-  font-weight: bold;
-}
-
-#timetable tbody tr:nth-child(even) {
-  background: #fafafa;
-}
-
-/* 作品名はクリックできると分かるように */
-.tt-title {
+.controls input[type="checkbox"]{
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  text-decoration: underline;
 }
 
-/* =============================
-   モーダル全体
-============================= */
-.modal {
+.reload-btn{
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  border-radius: 20px;
+  border: 1px solid #d8c08a;
+
+  background: linear-gradient(
+    to bottom,
+    #cfa24a,
+    #b57a00
+  );
+
+  color: #ffffff;
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.12),
+    inset 0 2px 4px rgba(255,255,255,.35);
+
+  transition:
+    background .2s ease,
+    box-shadow .2s ease,
+    transform .1s ease;
+}
+
+.reload-btn:hover{
+  background: linear-gradient(
+    to bottom,
+    #ddb45c,
+    #c98a0a
+  );
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.18),
+    inset 0 2px 4px rgba(255,255,255,.45);
+}
+
+.reload-btn:active{
+  transform: translateY(1px);
+  box-shadow:
+    0 3px 6px rgba(0,0,0,.18),
+    inset 0 2px 4px rgba(255,255,255,.25);
+}
+
+
+
+
+
+/* 今日・1週間の予定の日付を大きく */
+.cookie > strong{
+  display: inline-block;
+  font-size: 1.25em;   /* ← ここで調整（1.2〜1.4くらいがおすすめ） */
+  margin: 6px 0 8px;
+}
+
+
+/* スクロール */
+.scroll{
+  overflow:hidden;
+  white-space:nowrap;
+}
+.scroll span{
+  display:inline-block;
+  padding-left:100%;
+  animation-name:scroll;
+  animation-timing-function:linear;
+  animation-iteration-count:1;
+  font-size: 20px;
+}
+@keyframes scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-100%)}
+}
+
+.blink{
+  animation-name:scroll, blink;
+}
+@keyframes blink{50%{opacity:0}}
+
+.controls label{
+  margin-right:10px;
+  font-size:0.9em;
+}
+
+/* ===== ここからカレンダー共通枠 ===== */
+.calendar-card{
+  margin: 10px 15px;
+  border: 2px solid #d8c08a;
+  border-radius: 28px;
+  padding: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+}
+
+/* タブ */
+.tabs{
+  display:flex;
+  justify-content:space-around;
+  margin: 10px;
+}
+.tabs button{
+  width: 23%;
+  padding: 10px;
+  border:none;
+  border-radius: 20px;
+  font-size: 18px;
+  cursor:pointer;
+  background:#ffffff;
+  color:#333;
+  border:1px solid #e9e4d6;
+  transition: transform .1s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+}
+
+/* 選択中タブの色を和モダンに変更 */
+.tabs button.tab-active{
+  background:#1b1b1b;
+  color:#fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,.15);
+}
+.tabs button.tab-inactive{
+  background:#ffffff;
+}
+
+/* ===== カレンダー ===== */
+.calendar-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.calendar-nav button{
+  border:none;
+  background:#1b1b1b;
+  color:#fff;
+  border-radius:16px;
+  padding:4px 12px;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  text-align:center;
+  font-size:12px;
+}
+.day-name{
+  font-weight:bold;
+  color:#444;
+}
+.today-label{
+  display:block;
+  font-size:10px;
+  margin-top:4px;
+  color:#b57a00;
+  font-weight:bold;
+}
+.cal-cell{
+  background:#fff;
+  border-radius:16px;
+  padding:8px 4px;
+  box-shadow:0 3px 0 rgba(0,0,0,0.05);
+  cursor:pointer;
+  border:1px solid #f0f0f0;
+}
+.cal-sun{
+  background:#fff4f4;
+}
+.cal-sat{
+  background:#f4f7ff;
+}
+/* 今日セルの点滅 */
+@keyframes blinkToday {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.cal-today{
+  background: #fff;
+  border: 2px solid #b57a00;
+  animation: blinkToday 1.2s infinite;
+}
+
+/* 記号説明 */
+.legend{
+  margin-top:10px;
+  font-size:12px;
+  color:#555;
+}
+
+/* ===== モーダル全体 ===== */
+.modal{
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  align-items: center;
+  background: rgba(0,0,0,0.35);
+
+  display: none;
   justify-content: center;
+  align-items: center;
+
   z-index: 9999;
 }
 
-/* 非表示 */
-.hidden {
-  display: none !important;
-}
-.modal.hidden {
-  display: none;
-}
-
+/* ===== モーダル枠 ===== */
 .modal-content{
   background: #ffffff;
   border-radius: 28px;
@@ -434,22 +280,63 @@ body {
   width: 90%;
   max-width: 420px;
 
-  max-height: 92vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
 
   box-shadow: 0 6px 15px rgba(0,0,0,.25);
 }
 
+/* ===== 日付 ===== */
+.modal-date{
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* ===== 本文（スクロール領域） ===== */
 .modal-body{
-  flex: 1;                 /* ← ここ重要 */
+  flex: 1;
   overflow-y: auto;
-  overscroll-behavior: contain;
-  margin: 10px 0 12px;
+  margin: 10px 0 16px;
   -webkit-overflow-scrolling: touch;
 }
 
+/* 本文テキスト */
+.modal-status{
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color:#333;
+}
 
+/* ===== セクション区切り ===== */
+.modal-section {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.modal-section strong{
+  display: block;
+  margin-bottom: 6px;
+  color:#111;
+}
+
+.modal-divider{
+  border-top: 1px dashed #d8c08a;
+  margin: 14px 0;
+}
+.modal-controls{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+.modal-controls button{
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
 /* ===== 戻るボタン（下固定） ===== */
 .modal-back{
@@ -482,78 +369,121 @@ body {
   transform: translateY(0);
 }
 
-#modalClose {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  font-size: 20px;
-  background: none;
-  border: none;
-  cursor: pointer;
+/* ===== 部活用 ===== */
+.club-title {
+  font-weight: bold;
+  margin-top: 8px;
 }
 
-.image-zoom-wrapper{
-  position: relative;
+.club-detail {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 18px;
+  background: #f7f7f7;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-.zoom-close{
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0,0,0,0.65);
-  color: #fff;
-  font-size: 28px;
-  line-height: 1;
-  cursor: pointer;
+.club-divider {
+  margin: 6px 0;
+  color: #999;
 }
 
-/* 拡大していない時は非表示 */
-.zoom-close.hidden{
-  display: none;
-}
-
-/* モーダル画像 通常 */
-#modalImage {
-  max-width: 100%;
-  height: auto;
+.paging-area{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-top: 10px;
-  border-radius: 6px;
-  transition: transform 0.25s ease;
-  transform-origin: center center;
-  cursor: zoom-in;
 }
 
-/* 拡大状態 */
-#modalImage.zoomed {
-  transform: scale(2) translate(0, 0);
-  touch-action: none;
-  cursor: grab;
-}
-#modalImage.zoomed:active{
-  cursor: grabbing;
+.paging-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-/*============================
-リンクエリア
-============================*/
+.paging-left{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.paging-right{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.paging-left span,
+.paging-left select{
+  font-size: 12px;
+}
+
+.paging-sep{
+  opacity: 0.6;
+}
+
+.paging-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: transform .1s ease, background .2s ease;
+  background:#1b1b1b;
+  color:#fff;
+}
+.paging-btn:hover {
+  transform: translateY(-1px);
+}
+.paging-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.club-card{
+  background: #ffffff;
+  border: 2px solid #d8c08a;
+  border-radius: 20px;
+  padding: 12px;
+  margin: 8px 0;
+  box-shadow:
+    0 6px 10px rgba(0,0,0,.12),
+    inset 0 3px 5px rgba(255,255,255,.4);
+}
+
+.club-card-title{
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.club-card-body{
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 14px;
+}
+/*ボタン色制御*/
+button[disabled]{
+  background: #cccccc !important;
+  cursor: not-allowed;
+}
+
+
 /* 下部リンク（カレンダー直下表示） */
 .link-area{
-  display: flex;
-  flex-wrap: wrap;            /* 折り返し許可 */
+  display:none;
   grid-template-columns: repeat(3, 1fr); /* ← 3列固定 */
   margin: 12px 15px 0;
   padding: 10px 0;
+  display:flex;
   gap: 10px;
   justify-content:center;
-  overflow: visible;   /* 親のスクロールを阻害しない */
-}.link-area a {
-  flex: 1 1 calc(33.333% - 10px); /* 3列化 */
-  text-align: center;
 }
 
 .link-area button{
@@ -567,1598 +497,1259 @@ body {
   cursor:pointer;
   box-shadow: 0 6px 12px rgba(0,0,0,0.12);
 }
-.action-button {
-  display: inline-block;
-  padding: 10px 16px;
-  border-radius: 18px;
-  background-color: #1b1b1b;
-  color: #fff;
-  font-weight: bold;
-  text-decoration: none;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  transition: transform 0.1s ease;
+
+/* スマホ対応 */
+@media (max-width: 600px){
+  body{ font-size: 12px; }
+  .cookie{
+    padding: 16px;
+    margin: 12px;
+    border-radius: 26px;
+  }
+  .cookie h3{
+    font-size: 1.05em;
+  }
+  .scroll span{
+    font-size: 16px;
+  }
+  .tabs button{
+    font-size: 16px;
+    padding: 8px;
+  }
+  .calendar-nav button{
+    font-size: 16px;
+    padding: 4px 10px;
+  }
+  .calendar-grid{
+    font-size: 11px;
+    gap: 5px;
+  }
+  .cal-cell{
+    padding: 6px 3px;
+    border-radius: 14px;
+  }
+  .today-label{
+    font-size: 9px;
+  }
+  .legend{
+    font-size: 11px;
+  }
+  .modal-content{
+    padding: 16px;
+    width: 94%;
+    max-width: 360px;
+  }
+  .modal-date{
+    font-size: 1.0em;
+  }
+  .modal-status{
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .modal-back{
+    font-size: 15px;
+    padding: 11px;
+  }
+  .club-card-body{
+    font-size: 13px;
+  }
 }
 
-.action-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+/* iPad mini 縦（600px〜768px） */
+@media (min-width: 601px) and (max-width: 768px) and (orientation: portrait){
+  body{ font-size: 13px; }
+  .cookie{
+    padding: 18px;
+    margin: 14px;
+    border-radius: 28px;
+  }
+  .cookie h3{
+    font-size: 1.15em;
+  }
+  .scroll span{
+    font-size: 18px;
+  }
+  .tabs button{
+    font-size: 17px;
+    padding: 9px;
+  }
+  .calendar-nav button{
+    font-size: 17px;
+    padding: 4px 11px;
+  }
+  .calendar-grid{
+    font-size: 12px;
+    gap: 6px;
+  }
+  .cal-cell{
+    padding: 7px 4px;
+    border-radius: 15px;
+  }
+  .today-label{
+    font-size: 9.5px;
+  }
+  .legend{
+    font-size: 12px;
+  }
+  .modal-content{
+    padding: 18px;
+    width: 92%;
+    max-width: 380px;
+  }
+  .modal-date{
+    font-size: 1.05em;
+  }
+  .modal-status{
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .modal-back{
+    font-size: 15px;
+    padding: 11px;
+  }
+  .club-card-body{
+    font-size: 13.5px;
+  }
 }
 
-
-.badge {
-  display: inline-block;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 4px;
-  margin-bottom: 8px;
+/* iPad 横（600px〜768px） */
+@media (min-width: 601px) and (max-width: 768px) and (orientation: landscape){
+  body{ font-size: 13.5px; }
+  .cookie{
+    padding: 20px;
+    margin: 14px;
+    border-radius: 28px;
+  }
+  .cookie h3{
+    font-size: 1.2em;
+  }
+  .scroll span{
+    font-size: 20px;
+  }
+  .tabs button{
+    font-size: 18px;
+    padding: 10px;
+  }
+  .calendar-nav button{
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+  .calendar-grid{
+    font-size: 12.5px;
+    gap: 6px;
+  }
+  .cal-cell{
+    padding: 8px 4px;
+    border-radius: 16px;
+  }
+  .today-label{
+    font-size: 10px;
+  }
+  .legend{
+    font-size: 12.5px;
+  }
+  .modal-content{
+    padding: 20px;
+    width: 86%;
+    max-width: 420px;
+  }
+  .modal-date{
+    font-size: 1.1em;
+  }
+  .modal-status{
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .modal-back{
+    font-size: 16px;
+    padding: 12px;
+  }
+  .club-card-body{
+    font-size: 14px;
+  }
 }
 
-.badge-new {
-  background: #e60033;
-  color: #fff;
+/* PC（12~14inch） */
+@media (min-width: 769px) and (max-width: 1279px){
+  body{ font-size: 14px; }
+  .cookie{
+    padding: 20px;
+    margin: 16px;
+    border-radius: 30px;
+  }
+  .cookie h3{
+    font-size: 1.3em;
+  }
+  .scroll span{
+    font-size: 22px;
+  }
+  .tabs button{
+    font-size: 18px;
+    padding: 10px;
+  }
+  .calendar-nav button{
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+  .calendar-grid{
+    font-size: 13px;
+    gap: 7px;
+  }
+  .cal-cell{
+    padding: 9px 5px;
+    border-radius: 17px;
+  }
+  .today-label{
+    font-size: 10px;
+  }
+  .legend{
+    font-size: 13px;
+  }
+  .modal-content{
+    padding: 22px;
+    width: 70%;
+    max-width: 520px;
+  }
+  .modal-date{
+    font-size: 1.2em;
+  }
+  .modal-status{
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .modal-back{
+    font-size: 16px;
+    padding: 12px;
+  }
+  .club-card-body{
+    font-size: 14px;
+  }
 }
 
-.badge-archive {
-  background: #666;
-  color: #fff;
-}
-
-.duration {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-#modalPdf {
-  width: 100%;
-  height: 60vh;
-  border: none;
-}
-
-
-
-
-
-
-
-/* =============================
-   📱 スマホ対応
-============================= */
-@media (max-width: 640px) {
-
-    .board-head {
-    grid-template-columns:
-      48px  /* ラベル */
-      72px  /* 開始時刻 */
-      60px  /* 所要時間 */
-      1fr;  /* 作品名 */
-    gap: 4px;
+/* PC（15inch以上） */
+@media (min-width: 1280px){
+  body{ font-size: 15px; }
+  .cookie{
+    padding: 22px;
+    margin: 18px;
+    border-radius: 32px;
   }
-
-  /* PCと同じ1行構成を維持 */
-  .board-row {
-    grid-template-columns:
-      48px        /* ラベル */
-      72px        /* 開始時刻 */
-      60px        /* 所要時間 */
-      1fr;        /* 作品名 */
-    gap: 4px;
-    height: 2.2em;          /* ← これが決定打 */
-    align-items: stretch;
+  .cookie h3{
+    font-size: 1.4em;
   }
-
-  /* フォント微調整 */
-  .outer {
-    height: 2em;
+  .scroll span{
+    font-size: 24px;
   }
-
-  .flap {
-    font-size: 0.9rem;
+  .tabs button{
+    font-size: 19px;
+    padding: 11px;
   }
-
-  .outer.title {
-    font-size: 0.9rem;
+  .calendar-nav button{
+    font-size: 19px;
+    padding: 6px 14px;
   }
-    #timetableWrapper {
-    overflow-x: auto;
+  .calendar-grid{
+    font-size: 14px;
+    gap: 8px;
   }
-  #timetable th,
-  #timetable td {
-    font-size: 0.85rem;
-    padding: 4px 6px;
-    white-space: normal;  /* ← 作品名だけ折り返し可能に */
+  .cal-cell{
+    padding: 10px 6px;
+    border-radius: 18px;
   }
-
-  /* 作品名のみ2行まで許可 */
-  #timetable td:nth-child(4) { 
-    display: -webkit-box;
-    -webkit-line-clamp: 2;  /* 最大2行 */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .today-label{
+    font-size: 11px;
   }
-
-  /* その他列は1行固定 */
-  #timetable td:not(:nth-child(4)) {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .legend{
+    font-size: 14px;
   }
-
-  /* テーブル下に固定備考 */
-  #ttNotes {
-    margin-top: 8px;
-    padding: 6px 8px;
-    font-size: 0.85rem;
-    background: #fafafa;
-    border-top: 1px solid #ccc;
+  .modal-content{
+    padding: 24px;
+    width: 60%;
+    max-width: 640px;
   }
-
-  /* 注意文はその下1行 */
-  #ttNotes p:last-child {
-    margin-top: 4px;
+  .modal-date{
+    font-size: 1.25em;
   }
-
-  /* 備考は縦積みしない */
-  .board-notes {
-    grid-template-columns: 48px 1fr;
+  .modal-status{
+    font-size: 16px;
+    line-height: 1.8;
   }
-
-  .notes-scroll {
-    font-size: 0.9rem;
+  .modal-back{
+    font-size: 17px;
+    padding: 13px;
   }
-  .board-notes .scroll {
-    height: 2em;
-    line-height: 2em;
-    font-size: 0.9rem;
-    padding: 0.2em 0.4em;
+  .club-card-body{
+    font-size: 15px;
   }
-
-  .modal{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-
-  display: none;
-  justify-content: center;
-  align-items: flex-end;   /* ← center → flex-end */
-
-  padding-bottom: 16px;    /* ← 下余白 */
-
-  z-index: 9999;
-  }
-
-  .modal-content {
-    width: 94vw;
-    max-height: 90vh;
-    padding: 14px;
-  }
-
-  #modalTitle {
-    font-size: 1.1rem;
-  }
-
-  #modalDesc {
-    font-size: 0.95rem;
-  }
-
 }
 
 
 </style>
 </head>
+
 <body>
-  <script id="gas-env" type="application/json">
-{
-  "pageType": "<?= pageType ?>",
-  "siteNo": <?= siteNo ?>
-}
-</script>
-
-
-  <div id="loadingScreen">
-  読み込み中<span id="loadingDots"></span>
-</div>
-
 
 <!-- タイトル -->
-<div id="titleCookie" class="cookie">
-  <div class="title" id="eventTitle"></div>
-  <div id="nowDateTime"></div>
-  <div class="desc" id="eventDesc"></div>
-</div>
+<h1 class="app-title">シネマクラブカレンダー</h1>
 
-<!-- 電光掲示板 -->
-<div id="board" class="cookie">
-
-  <!-- ヘッダ -->
-  <div class="board-head">
-    <div></div>
-    <div>開始時刻</div>
-    <div>所要時間</div>
-    <div>作品名</div>
+<!-- 時刻 & 表示切替 -->
+<div class="cookie">
+  <strong>ただいまの時刻</strong>
+  <span id="time"></span>
+  
+  <div>
+  現在の部室人数：
+  <strong><span id="roomCount">0</span>人</strong>
   </div>
 
-  <!-- ================= 次 ================= -->
-  <div class="board-row">
-    <div class="label">次</div>
-
-    <!-- 開始時刻 -->
-    <div class="time-wrapper">
-      <div class="outer" id="nextStartHH">
-        <div class="flap-container">
-          <div class="flap main"></div>
-          <div class="flap top"></div>
-          <div class="flap bottom"></div>
-          <div class="gap"></div>
-        </div>
-      </div>
-      <span class="colon">:</span>
-      <div class="outer" id="nextStartMM">
-        <div class="flap-container">
-          <div class="flap main"></div>
-          <div class="flap top"></div>
-          <div class="flap bottom"></div>
-          <div class="gap"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 所要時間 -->
-    <div class="time-wrapper">
-      <div class="outer duration" id="nextDurationNum">
-        <div class="flap-container">
-          <div class="flap main"></div>
-          <div class="flap top"></div>
-          <div class="flap bottom"></div>
-          <div class="gap"></div>
-        </div>
-      </div>
-      <span class="unit">分</span>
-    </div>
-
-    <!-- 作品名 -->
-    <div class="outer title" id="nextTitle">
-      <!-- フリップ用（短文） -->
-      <div class="flap-container">
-        <div class="flap main title-cell"></div>
-        <div class="flap top"></div>
-        <div class="flap bottom"></div>
-        <div class="gap"></div>
-      </div>
-
-      <!-- スクロール用（長文） -->
-      <div class="title-scroll">
-        <span></span>
-      </div>
-    </div>
+  <div class="controls">
+    <label><input type="checkbox" checked data-key="uni">大学共通</label>
+    <label><input type="checkbox" checked data-key="naka">中百舌鳥C</label>
+    <label><input type="checkbox" checked data-key="sug">杉本C</label>
+    <label><input type="checkbox" checked data-key="mori">森之宮C</label>
+    <label><input type="checkbox" checked data-key="club">部活</label>
   </div>
-
-  <!-- ================= 次々回 ================= -->
-  <div class="board-row">
-    <div class="label">次々回</div>
-
-    <!-- 開始時刻 -->
-    <div class="time-wrapper">
-      <div class="outer" id="next2StartHH">
-        <div class="flap-container">
-          <div class="flap main"></div>
-          <div class="flap top"></div>
-          <div class="flap bottom"></div>
-          <div class="gap"></div>
-        </div>
-      </div>
-      <span class="colon">:</span>
-      <div class="outer" id="next2StartMM">
-        <div class="flap-container">
-          <div class="flap main"></div>
-          <div class="flap top"></div>
-          <div class="flap bottom"></div>
-          <div class="gap"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 所要時間 -->
-    <div class="time-wrapper">
-      <div class="outer duration" id="next2DurationNum">
-        <div class="flap-container">
-          <div class="flap main"></div>
-          <div class="flap top"></div>
-          <div class="flap bottom"></div>
-          <div class="gap"></div>
-        </div>
-      </div>
-      <span class="unit">分</span>
-    </div>
-
-    <!-- 作品名 -->
-    <div class="outer title" id="next2Title">
-      <div class="flap-container">
-        <div class="flap main title-cell"></div>
-        <div class="flap top"></div>
-        <div class="flap bottom"></div>
-        <div class="gap"></div>
-      </div>
-      <div class="title-scroll">
-        <span></span>
-      </div>
-    </div>
-  </div>
-  <!-- 備考（独立枠） -->
-  <div class="board-notes">
-  <div class="notes-label">備考</div>
-  <div class="scroll notes-scroll" id="nextNotes">
-    <span>---</span>
-  </div>
-</div>
-
+  <button class="reload-btn" onclick="load(true)">
+  🔄 再読み込み　最新情報に更新
+  </button>
 
 </div>
 
-<!-- タイムテーブル、モーダル、ボタンは元のまま -->
-<div id="timetableCookie" class="cookie">
-  <div id="timetableWrapper" class="cookie">
-    <div id="timetableHeader">
-      <button id="prevDay" class="tt-btn">◀前の日へ</button>
-      <span id="ttDate"></span>
-      <button id="nextDay" class="tt-btn">次の日へ▶</button>
-    </div>
-    <table id="timetable">
-      <thead>
-        <tr>
-          <th>番号</th>
-          <th>開始時刻</th>
-          <th>所要時間</th>
-          <th>作品名</th>
-          <th>注意</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div>注意記号に関する説明</div>
-    <div id="ttNotes">      
-      <p></p>
-    </div>
-    <div>開始時刻までに上映会場内にご入場ください</div>
+<div id="today"></div>
+<div id="week"></div>
+
+<!-- ===== タブとカレンダーを一体化した枠 ===== -->
+<div class="calendar-card">
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button id="tabUni" class="tab-inactive" onclick="showTab('uni')">大学全体</button>
+    <button id="tabNaka" class="tab-active" onclick="showTab('naka')">中百舌鳥C</button>
+    <button id="tabMori" class="tab-inactive" onclick="showTab('mori')">森之宮C</button>
+    <button id="tabClub" class="tab-inactive" onclick="showTab('club')">部活動</button>
   </div>
+
+  <!-- 中百舌鳥学事日程 -->
+  <div id="nakaArea">
+    <div id="calendar"></div>
+  </div>
+
+  <!-- 大学学事日程 -->
+  <div id="uniArea" style="display:none">
+    <div id="uniCalendar"></div>
+  </div>
+
+  <!-- 森之宮学事日程 -->
+  <div id="moriArea" style="display:none">
+    <div id="moriCalendar"></div>
+  </div>
+
+  <!-- 部活動日程 -->
+  <div id="clubArea" style="display:none">
+    <div id="clubCalendar"></div>
+  </div>
+
 </div>
+<!-- ===== ここまで一体化枠 ===== -->
 
-<!-- モーダルについて-->
-
-<div id="modal" class="modal hidden">
-  <div class="modal-content">
-
-    <button id="modalClose">×</button>
-    <div class="modal-body">
-    <!-- 作品名 -->
-    <h2 id="modalTitle"></h2>
-
-    <!-- ふりがな -->
-    <div id="modalRuby" style="font-size:0.9rem;color:#666;"></div>
-
-    <!-- カテゴリ（新作/過去作） -->
-    <div id="modalBadge" class="badge"></div>
-
-    <!-- 所要時間 -->
-    <div id="modalDuration" class="duration"></div>
-
-
-      <!-- 紹介文 -->
-      <p id="modalDesc"></p>
-
-      <!-- モーダル用備考（I列） -->
-      <div id="modalNote"
-           style="margin-top:10px;font-size:0.95rem;"></div>
-
-      <!-- 注意記号 -->
-      <div id="modalCaution"
-           style="margin-top:10px;font-size:0.9rem;color:#900;"></div>
-
-      <!-- 画像 -->
-      <!-- 画像操作ボタン -->
-      <div class="image-zoom-wrapper">
-      <img id="modalImage" />
-      <button id="imageZoomClose" class="zoom-close hidden">×</button>
-      </div>
-      <!-- SVG直接埋め込み用 -->
-      <div id="modalImageSvg" style="margin-top:10px;"></div>
-      <!-- PDF表示用 -->
-      <iframe id="modalPdf" class="hidden" loading="lazy"></iframe>
-      
-    </div>
-
-    <button id="modalBack" class="modal-back">戻る</button>
-
-  </div>
+<div class="cookie">
+  <button id="enterBtn" class="reload-btn" onclick="enterRoom()"> 部室に入室する</button>
+  <button id="exitBtn" class="reload-btn" onclick="exitRoom()" disabled> 部室から退室する</button>
 </div>
 
 
-<div id="buttonCookie" class="cookie">
 <!-- リンクエリア -->
 <div id="linkArea" class="link-area" ></div>
+
+<!-- モーダル -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <div id="modalDate" class="modal-date"></div>
+
+    <div class="modal-body">
+      <div id="modalStatus" class="modal-status"></div>
+    </div>
+
+    <button class="modal-back" onclick="closeModal()">
+      カレンダーに戻る
+    </button>
+  </div>
 </div>
 
-  <script>
-    // ===== グローバル状態 =====
-    let worksReady = false;
-    let workDetailCache = {};
+
+<script>
+let allData=[];
+let calendarData=[];
+let scheduleData = [];
+let clubCalData = [];
+let clubData = [];
+let weekIndex=0;
+let weekTimer=null;
+
+// カレンダー別オフセット
+let nakaOffset = 0;
+let uniOffset = 0;
+let moriOffset = 0;
+let clubOffset = 0;
 
 
+ //===== ID =====
+ // ★ 追加（グローバル）
+  const VISIT_KEY = "club_visit_id";
 
-
-
-    // ===== ページ読み込み =====
-
-    let dotCount = 0;
-  const dotTimer = setInterval(() => {
-  const dots = '.'.repeat(dotCount % 4);
-  document.getElementById('loadingDots').textContent = dots;
-  dotCount++;
-  }, 500);
-
-  function stopLoadingScreen() {
-  clearInterval(dotTimer);
-  const el = document.getElementById('loadingScreen');
-  if (el) el.remove();
+  function getVisitId(){
+  let id = localStorage.getItem(VISIT_KEY);
+  if(!id){
+    id = crypto.randomUUID();
+    localStorage.setItem(VISIT_KEY, id);
+  }
+  return id;
   }
 
-  let PAGE_TYPE;
-  let SITE_NO;
+ const visitId = getVisitId();
+ const PAGE_NAME = "index";
 
-  const API_URL = "https://script.google.com/macros/s/AKfycbxxpzlMuaf743UFqJFN-SSCiOLkTRERHZpLBqQ0bkR0THFUMlMp14NX_Z5S3soZThhf-g/exec";
-  function callGAS(action, params = {}) {
+/* ================================
+   GAS / GitHub 両対応ラッパー
+================================ */
 
-  // ===== GAS環境 =====
-  if (window.google?.script?.run) {
-    return new Promise(resolve => {
+const isGAS = typeof google !== "undefined"
+           && google.script
+           && google.script.run;
+
+/**
+ * GASなら google.script.run
+ * GitHubなら mock 関数
+ */
+function runGAS(method, ...args){
+  if(isGAS){
+    return new Promise((resolve, reject)=>{
       google.script.run
-        .withSuccessHandler(resolve)[action](...Object.values(params));
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)[method](...args);
     });
+  }else{
+    // GitHub Pages
+    const paramMap = {
+      getScheduleData: {},
+      getCalendarData: {},
+      getButtonData: { target: args[0], active: args[1] },
+      getRoomStatus: { visitId: args[0] },
+      enterRoom: { visitId: args[0] },
+      exitRoom: { visitId: args[0] },
+      recordViewer: { page: args[0], visitId: args[1] }
+    };
+    return fetchAPI(method, paramMap[method] || {});
   }
+}
 
-  // ===== GitHub環境 =====
-  const url = new URL(API_URL);
-  url.searchParams.set("api","true");
+const GAS_API = "https://script.google.com/macros/s/AKfycbz-hHL28w2EL_xpDsja9AAA2IdHHMS8ENT6JiBo8by3jM6VPMHVo7xN0CoWKF3trAaj/exec";
+
+function fetchAPI(action, params = {}){
+  const url = new URL(GAS_API);
   url.searchParams.set("action", action);
 
   Object.entries(params).forEach(([k,v])=>{
-    url.searchParams.set(k,v);
+    url.searchParams.set(k, v);
   });
 
-  return fetch(url).then(r => r.json());
-}
-
-// ===== GAS / GitHub 共通判定 =====
-const gasEnvEl = document.getElementById('gas-env');
-
-if (gasEnvEl) {
-  try {
-    const env = JSON.parse(gasEnvEl.textContent);
-    PAGE_TYPE = env.pageType;
-    SITE_NO   = Number(env.siteNo);
-  } catch (e) {
-    console.warn('gas-env parse failed');
-  }
-}
-
-// GitHub Pages fallback
-if (!PAGE_TYPE || !SITE_NO) {
-  const params = new URLSearchParams(window.location.search);
-  PAGE_TYPE = params.get('page') || 'index';
-  SITE_NO   = Number(params.get('n') || 1);
+  return fetch(url.toString())
+    .then(res => res.json());
 }
 
 
 
+// ページを開いたら記録
+runGAS("recordViewer", PAGE_NAME, visitId);
 
-// =============================
-// 電光掲示板 完全制御ロジック【完成版】
-// =============================
 
-let displayData = { next: null, next2: null };
-let worksList = [];
-let flipping = false;
-let lastNotesText = '';
+// 日付が変わったら自動で再読み込み
+function scheduleMidnightReload() {
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  const diff = next.getTime() - now.getTime();
 
-const cells = {
-  next: {
-    hh: document.getElementById('nextStartHH'),
-    mm: document.getElementById('nextStartMM'),
-    dur: document.getElementById('nextDurationNum'),
-    title: document.getElementById('nextTitle')
-  },
-  next2: {
-    hh: document.getElementById('next2StartHH'),
-    mm: document.getElementById('next2StartMM'),
-    dur: document.getElementById('next2DurationNum'),
-    title: document.getElementById('next2Title')
-  }
-};
-
-const scrollNotes = document.getElementById('nextNotes');
-
-// =============================
-// 共通ユーティリティ
-// =============================
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-function setCellText(el, text) {
-  const main = el.querySelector('.flap.main');
-  const top = el.querySelector('.flap.top');
-  const bottom = el.querySelector('.flap.bottom');
-  main.textContent = top.textContent = bottom.textContent = text;
+  setTimeout(() => {
+    load(true);
+    scheduleMidnightReload();
+  }, diff);
 }
 
-function safe2(v) {
-  return isNaN(v) ? '--' : String(v).padStart(2, '0');
+/* ===== 時刻 ===== */
+function updateTime(){
+  time.textContent=new Date().toLocaleString();
 }
-
-// =============================
-// フリップ（参考コード完全準拠）
-// =============================
-async function flipFlap(el, nextText, duration = 100) {
-  const main = el.querySelector('.flap.main');
-  const top = el.querySelector('.flap.top');
-  const bottom = el.querySelector('.flap.bottom');
-
-  top.textContent = nextText;
-  top.style.display = bottom.style.display = 'block';
-
-  main.style.zIndex = 11;
-  bottom.style.zIndex = 12;
-  top.style.zIndex = 10;
-
-  let anim = main.animate([{ transform: 'rotateX(-90deg)' }], { duration });
-  await anim.finished;
-
-  main.style.transform = 'rotateX(90deg)';
-  main.textContent = nextText;
-
-  main.style.zIndex = 11;
-  bottom.style.zIndex = 10;
-  top.style.zIndex = 12;
-
-  anim = main.animate([{ transform: 'rotateX(0deg)' }], {
-    duration,
-    fill: 'forwards'
-  });
-  await anim.finished;
-
-  bottom.textContent = nextText;
-  top.style.display = bottom.style.display = 'none';
-}
-
-// =============================
-// 数字フリップ
-// =============================
-async function flipNumber(el, from, to, step, durationMs) {
-  const end = Date.now() + durationMs;
-  let v = from;
-
-  while (Date.now() < end && v <= to) {
-    await flipFlap(el, safe2(v));
-    v += step;
-  }
-  setCellText(el, safe2(to));
-}
-// =============================
-// 作品名ランダム回転（Works 使用）
-// =============================
-function clearNotes(){
-  lastNotesText = '';
-  scrollNotes.innerHTML = '<span>---</span>';
-  scrollNotes.dataset.currentText = '';
-}
-
-async function spinRandomTitlesSteps(el, totalSteps) {
-  if (!worksList || !worksList.length) return;
-
-  // 回転中はスクロール無効
-  el.classList.remove('show-scroll');
-  el.querySelector('.title-scroll span').textContent = '';
-
-  const flapContainer = el.querySelector('.flap-container');
-  const flap = flapContainer.querySelector('.flap.main');
-  const top = flapContainer.querySelector('.flap.top');
-  const bottom = flapContainer.querySelector('.flap.bottom');
-
-  for (let i = 0; i < totalSteps; i++) {
-    const title = worksList[Math.floor(Math.random() * worksList.length)];
-
-    // 上フラップに次のタイトルをセットして表示
-    top.textContent = title;
-    top.style.display = bottom.style.display = 'block';
-
-    flap.style.zIndex = 11;
-    bottom.style.zIndex = 12;
-    top.style.zIndex = 10;
-
-    // 回転アニメーション（上半分折りたたみ）
-    let anim = flap.animate([{ transform: 'rotateX(-90deg)' }], { duration: FLIP_MS });
-    await anim.finished;
-
-    flap.style.transform = 'rotateX(90deg)';
-    flap.textContent = title;
-
-    flap.style.zIndex = 11;
-    bottom.style.zIndex = 10;
-    top.style.zIndex = 12;
-
-    // 回転戻し
-    anim = flap.animate([{ transform: 'rotateX(0deg)' }], { duration: FLIP_MS, fill: 'forwards' });
-    await anim.finished;
-
-    bottom.textContent = title;
-    top.style.display = bottom.style.display = 'none';
-  }
-}
-
-
-
-
-// =============================
-// タイトル制御
-// =============================
-function setTitle(el, text) {
-  const isLong = text.length > 14;
-
-  const flap = el.querySelector('.flap.main.title-cell');
-  const scroll = el.querySelector('.title-scroll span');
-
-  el.classList.toggle('show-scroll', isLong);
-
-  if (isLong) {
-    flap.textContent = '';
-    scroll.textContent = text;
-
-    const boxWidth = el.offsetWidth;
-    const textWidth = scroll.offsetWidth;
-
-    if (textWidth <= boxWidth) return; // 長さ不足ならスクロール不要
-
-    const speed = 60; // px/sec
-    const distance = boxWidth + textWidth;
-    const duration = distance / speed;
-
-    scroll.style.setProperty('--start-x', `${boxWidth}px`);
-    scroll.style.setProperty('--end-x', `-${textWidth}px`);
-    scroll.style.setProperty('--scroll-duration', `${duration}s`);
-    scroll.style.animation = `scrollText var(--scroll-duration) linear infinite`;
-  } else {
-    flap.textContent = text;
-    scroll.textContent = '';
-  }
-}
-
-function activateTitleScroll(el) {
-  const span = el.querySelector('.title-scroll span');
-  const text = span.textContent;
-  if (!text) return;
-
-  const textWidth = span.offsetWidth;
-  const boxWidth = el.offsetWidth;
-  if (textWidth <= boxWidth) return;
-
-  const speed = 120; // px/s
-  const distance = boxWidth + textWidth;
-  const duration = distance / speed;
-
-  span.style.setProperty('--start-x', `${boxWidth}px`);
-  span.style.setProperty('--end-x', `-${textWidth}px`);
-  span.style.setProperty('--scroll-duration', `${duration}s`);
-  span.style.animation = `scrollText var(--scroll-duration) linear infinite`;
-}
-
-
-
-function getCurrentNumber(el) {
-  const text = el.querySelector('.flap.main')?.textContent;
-  const n = parseInt(text, 10);
-  return isNaN(n) ? 0 : n;
-}
-
-// =============================
-// スクロール
-// =============================
-
-function updateNotes(data) {
-  const text = [
-    data?.notes,
-    typeof shopInfo !== 'undefined' ? shopInfo : '',
-    typeof recruitInfo !== 'undefined' ? recruitInfo : ''
-  ].filter(Boolean).join('　');
-
-  if (text === lastNotesText) return;
-  lastNotesText = text;
-}
-
-// =============================
-// ブラックアウト
-// =============================
-function setBlack(target, on) {
-  Object.values(cells[target]).forEach(el => {
-    el.classList.toggle('black', on);
-  });
-}
-
-function calcStepsToLimit(current, limit, step) {
-  if (current > limit) return 0;
-  return Math.floor((limit - current) / step) + 1;
-}
-
-const FLIP_MS = 100;
-function getCurrentValue(el) {
-  const text = el.querySelector('.flap.main')?.textContent;
-  const n = parseInt(text, 10);
-  return isNaN(n) ? 0 : n;
-}
-
-
-function calcPreBlackTotalSteps(cell) {
-  const hhNow  = getCurrentValue(cell.hh);
-  const mmNow  = getCurrentValue(cell.mm);
-  const durNow = getCurrentValue(cell.dur);
-
-  const hhSteps  = Math.max(0, Math.floor((26 - hhNow) / 1) + 1);
-  const mmSteps  = Math.max(0, Math.floor((59 - mmNow) / 1) + 1);
-  const durSteps = Math.max(0, Math.floor((180 - durNow) / 5) + 1);
-
-  // 一番長いセルに全体を合わせる
-  return Math.max(hhSteps, mmSteps, durSteps);
-}
-
-async function flipBlack(el, durationMs) {
-  el.classList.add('black');
-
-  const end = Date.now() + durationMs;
-  let v = 0;
-
-  while (Date.now() < end) {
-    await flipFlap(el, safe2(v % 100));
-    v++;
-  }
-}
-async function flipUntilLimitWithBlack(el, start, limit, step, totalSteps) {
-  let v = start;
-  let steps = 0;
-
-  // ① 上限まで通常回転
-  while (v <= limit && steps < totalSteps) {
-    await flipFlap(el, safe2(v), FLIP_MS);
-    v += step;
-    steps++;
-  }
-
-  // ② 残りは黒回転
-  while (steps < totalSteps) {
-    el.classList.add('black');
-    await flipFlap(el, safe2(Math.floor(Math.random() * 99)), FLIP_MS);
-    steps++;
-  }
-}
-
-
-
-
-
-
-// =============================
-// メイン更新シーケンス
-// =============================
-async function preBlackSequence(target) {
-  const cell = cells[target];
-  clearNotes();
-
-  // ① 必要ステップ数を算出
-  const totalSteps = calcPreBlackTotalSteps(cell);
-  const A = totalSteps * FLIP_MS;
-
-  await Promise.all([
-    flipUntilLimitWithBlack(
-      cell.hh,
-      getCurrentValue(cell.hh),
-      26,
-      1,
-      totalSteps
-    ),
-    flipUntilLimitWithBlack(
-      cell.mm,
-      getCurrentValue(cell.mm),
-      59,
-      1,
-      totalSteps
-    ),
-    flipUntilLimitWithBlack(
-      cell.dur,
-      getCurrentValue(cell.dur),
-      180,
-      5,
-      totalSteps
-    ),
-    spinRandomTitlesSteps(cell.title, totalSteps)
-  ]);
-
-  // 完全ブラック
-  setBlack(target, true);
-
-  setCellText(cell.hh, '00');
-  setCellText(cell.mm, '00');
-  setCellText(cell.dur, '00');
-}
-
-
-async function fetchNextData() {
-  return new Promise(resolve => {
-      callGAS("getNextScheduleForBoard",{siteNo:SITE_NO})
-      .then(resolve);
-  });
-}
-
-/*目標値までのステップ数計算*/
-
-function calcRevealSteps(targetValue, step) {
-  if (targetValue <= 0) return 1;
-  return Math.floor(targetValue / step) + 1;
-}
-
-
-/*ステップ制御型*/
-async function flipUntilTarget(el, target, step, totalSteps) {
-  let v = 0;
-  let steps = 0;
-
-  while (steps < totalSteps) {
-    if (v <= target) {
-      await flipFlap(el, safe2(v), FLIP_MS);
-      v += step;
-    } else {
-      // 目標到達後は何もしない（表示固定）
-      await sleep(FLIP_MS);
-    }
-    steps++;
-  }
-
-  setCellText(el, safe2(target));
-}
-
-
-async function revealSequence(target, data) {
-  const cell = cells[target];
-  setBlack(target, false);
-
-  const [h, m] = data.startTime.split(':').map(Number);
-  const d = data.durationMin;
-
-  // ① 各セルの必要ステップ
-  const hhSteps  = calcRevealSteps(h, 1);
-  const mmSteps  = calcRevealSteps(m, 1);
-  const durSteps = calcRevealSteps(d, 5);
-
-  // ② 最大ステップ数に同期
-  const totalSteps = Math.max(hhSteps, mmSteps, durSteps);
-  const totalDuration = totalSteps * FLIP_MS;
-
-  await Promise.all([
-    flipUntilTarget(cell.hh, h, 1, totalSteps),
-    flipUntilTarget(cell.mm, m, 1, totalSteps),
-    flipUntilTarget(cell.dur, d, 5, totalSteps),
-    spinRandomTitlesSteps(cell.title, totalSteps)
-  ]);
-
-  setTitle(cell.title, data.title);
-  activateTitleScroll(cell.title);
-  updateNotesBoard();
-}
-
-
-
-async function updateBoard() {
-  if (flipping) return;
-  flipping = true;
-
-  /* ===== A. プレブラック（5秒） ===== */
-  await Promise.all([
-    preBlackSequence('next', 5000),
-    preBlackSequence('next2', 5000)
-  ]);
-
-  /* ===== B. ブラック維持＋新データ取得 ===== */
-  const list = await fetchNextData();
-  displayData.next = list[0];
-  displayData.next2 = list[1];
-
-  /* ===== C + D. 黒解除 → 正解 ===== */
-  await revealSequence('next', displayData.next, 2500);
-
-  await sleep(1200);
-
-  if (displayData.next2) {
-    await revealSequence('next2', displayData.next2, 2000);
-  }
-
-  flipping = false;
-}
-
-
-
-// =============================
-// 初回起動
-// =============================
-async function firstBoot() {
-  const list = await new Promise(resolve => {
-      callGAS("getNextScheduleForBoard",{siteNo:SITE_NO})
-      .then(resolve);
+setInterval(updateTime,1000);
+updateTime();
+
+/* ===== データ読込 ===== */
+function load(force=false){
+
+  runGAS("getScheduleData").then(d=>{
+  scheduleData = d.schedule;
+  clubData     = d.club;
+  allData      = d.schedule;
+  render();
+  }).catch(()=>{
+  document.body.innerHTML="データの読み込みができません";
   });
 
-  displayData.next = list[0];
-  displayData.next2 = list[1];
-  updateNotesBoard();
-  updateBoard(displayData.next);
-}
-
-// =============================
-// 時刻監視（開始2分後）
-// =============================
-function watchTime() {
-  if (!displayData.next || flipping) return;
-
-  const [h, m] = displayData.next.startTime.split(':').map(Number);
-  const start = new Date();
-  start.setHours(h, m, 0, 0);
-
-  if (Date.now() - start >= 2 * 60 * 1000) {
-    firstBoot();
-  }
-}
-
-// =============================
-// モーダル連携（掲示板タイトル）
-// =============================
-cells.next.title.onclick = () => {
-  if (flipping) return;
-  if (!displayData.next?.workId) return;
-
-  openWorkModal(displayData.next.workId); // ★ これだけ
-};
-
-cells.next2.title.onclick = () => {
-  if (flipping) return;
-  if (!displayData.next2?.workId) return;
-
-  openWorkModal(displayData.next2.workId); // ★ これだけ
-};
-
-
-
-// =============================
-// 備考欄
-// =============================
-let lastNoteText = '';
-let lastNoteMode = '';
-
-async function updateNotesBoard() {
-
-  const res = await callGAS("getBoardNotes",{siteNo:SITE_NO});
-
-  let text = '';
-  let mode = res.mode || 'none';
-
-  if (mode === 'none') {
-    text = '---';
-  } else if (mode === 'alert') {
-    text = res.text || 'まもなく上映開始';
-  } else if (res.text) {
-    text = res.text;
-  } else {
-    text = '---';
-  }
-
-  const isAlert = mode === 'alert';
-
-  if (text === lastNoteText && mode === lastNoteMode) return;
-
-  lastNoteText = text;
-  lastNoteMode = mode;
-
-  setScrollText(scrollNotes, text, isAlert);
-}
-
-
-function setScrollText(el, text, isAlert = false) {
-
-  // ★ 同一テキストかつ alert でなければスクロール維持
-  if (el.dataset.currentText === text && !isAlert) return;
-
-  el.dataset.currentText = text;
-
-  el.innerHTML = '';
-  const span = document.createElement('span');
-  span.textContent = text;
-
-  if (isAlert) {
-    span.style.color = 'red';
-    span.style.animation = 'blinkRed 1s step-start infinite';
-  } else {
-    span.style.color = '#00ff66';
-  }
-
-  el.appendChild(span);
-
-  requestAnimationFrame(() => {
-    if (isAlert) return;
-    if (!text || text === '---') return;
-
-    const textWidth = span.offsetWidth;
-    const boxWidth = el.offsetWidth;
-    const speed = 120;
-    const distance = boxWidth + textWidth;
-    const duration = distance / speed;
-
-    span.style.setProperty('--start-x', `${boxWidth}px`);
-    span.style.setProperty('--end-x', `-${textWidth}px`);
-    span.style.setProperty('--scroll-duration', `${duration}s`);
-
-    span.style.animation = `scrollText var(--scroll-duration) linear infinite`;
-  });
-}
-
-// 回転終了後に再更新
-updateNotesBoard();
-
-
-
-// =============================
-// 初期化
-// =============================
-window.addEventListener('load', () => {
-  callGAS("getWorksList").then(list => worksList = list);
-  firstBoot();
-  setInterval(updateNotesBoard, 30000);
-  updateNotesBoard(); // 初回実行
-  setInterval(watchTime, 1000);
-});
-
-// ===== 電光掲示板終了 =====
-
-// =============================
-// タイムテーブル（日単位・完全制御）【修正版】
-// =============================
-
-let timetableDays = [];
-let dayIndex = 0;
-
-// 初期ロード
-function initTimetable() {
-  console.log('initTimetable called, PAGE_TYPE=', PAGE_TYPE);
-
-  callGAS("getEventTimetableBySite", { siteNo: SITE_NO })
-  .then(days => {
-    console.log('timetable days=', days);
-
-    if (!days || days.length === 0) {
-      document.getElementById('timetableCookie').style.display = 'none';
-      return;
-    }
-
-    timetableDays = days;
-    dayIndex = getDefaultDayIndex();
-    renderDay();
-    updateDayButtons();
-  });
-  // ===== タイムテーブル自動更新（5分）=====
-  if (['index', 'top'].includes(PAGE_TYPE)) {
-  setInterval(() => {
-      callGAS("getEventTimetableBySite", { siteNo: SITE_NO })
-  .then(days => {
-      if (!days || !days.length) return;
-
-      timetableDays = days;
-      if (dayIndex >= timetableDays.length) {
-        dayIndex = timetableDays.length - 1;
-      }
-      renderDay();
-      updateDayButtons();
-    });
-  }, 5 * 60 * 1000); // 5分
-  }
-}
-
-
-// デフォルト表示日
-function getDefaultDayIndex() {
-  const today = new Date();
-
-  for (let i = 0; i < timetableDays.length; i++) {
-    const d = timetableDays[i];
-    const date = new Date(d.year, d.month - 1, d.day);
-    if (today <= date) return i;
-  }
-  return timetableDays.length - 1;
-}
-
-// 1日分描画
-function renderDay() {
-  const day = timetableDays[dayIndex];
-
-  document.getElementById('ttDate').textContent =
-    `${day.month}月${day.day}日`;
-
-  const tbody = document.querySelector('#timetable tbody');
-  tbody.innerHTML = '';
-
-  // ===== 表示用に並び替え =====
-  const sortedRows = [...day.rows].sort((a, b) => {
-    const aEnded = a.startTime === '上映終了' || a.startTime === '上映中止';
-    const bEnded = b.startTime === '上映終了' || b.startTime === '上映中止';
-
-    // 上映終了は必ず後ろ
-    if (aEnded && !bEnded) return 1;
-    if (!aEnded && bEnded) return -1;
-
-    // 両方時刻あり → 時刻比較
-    if (!aEnded && !bEnded) {
-      return a.startTime.localeCompare(b.startTime);
-    }
-
-    return 0;
+  runGAS("getCalendarData").then(d=>{
+  calendarData = d.scheduleCal;
+  clubCalData  = d.clubCal;
+  renderNakaCalendar();
+  renderUniCalendar();
+  renderMoriCalendar();
+  renderClubCalendar();
+  return runGAS("getButtonData", "A", true);
+  }).then(renderLinks).catch(()=>{
+  document.body.innerHTML="データの読み込みができません";
   });
 
-  sortedRows.forEach((row, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${row.startTime}</td>
-      <td>約${row.duration}分</td>
-      <td class="tt-title" data-workid="${row.workId || ''}">
-      ${row.title}
-      </td>
-      <td>${row.caution || ''}</td>
-    `;
-    tbody.appendChild(tr);
-  });
+}
 
-  document.getElementById('ttNotes').innerHTML = `
-    <p>A＝お子様でもお楽しみいただけます</p>
-    <p>B＝流血描写を含みます　観覧の際はご注意ください</p>
-    <p>C＝飲酒や喫煙の描写を含みます　観覧の際はご注意ください</p>
-    <p>D＝災害描写を含みます　観覧の際はご注意ください</p>
-    <p>E＝一般のお客様はご覧いただけません</p>
+
+// リンク表示
+const linkArea = document.getElementById("linkArea");
+function renderLinks(buttons){
+  const list = (buttons || [])
+    .filter(item => item.name && item.url && item.target)
+    .filter(item => String(item.target || "").trim().toUpperCase().includes("A"));
+
+  if(!list.length){
+    linkArea.style.display = "none";
+    return;
+  }
+
+  linkArea.style.display = "flex";
+  linkArea.innerHTML = list.map(b =>
+    `<button onclick="window.open('${b.url}', '_blank', 'noopener,noreferrer')">${b.name}</button>`
+  ).join("");
+}
+
+
+
+
+
+/* ===== 表示ON/OFF ===== */
+function enabled(key){
+  return document.querySelector(`input[data-key="${key}"]`).checked;
+}
+
+/* ===== スクロール ===== */
+function scrollSpan(text, duration, blink){
+  const cls = blink ? "blink" : "";
+  return `
+    <div class="scroll">
+      <span class="${cls}" style="animation-duration:${duration}s">
+        ${text}
+      </span>
+    </div>
   `;
 }
 
-// =============================
-// 前へ・次へ ボタン
-// =============================
+/* ===== テキスト生成 ===== */
+function buildText(d){
+  let t=[];
 
-document.getElementById('prevDay').onclick = () => {
-  if (dayIndex <= 0) return;
-  dayIndex--;
-  renderDay();
-  updateDayButtons();
-};
+  if(enabled("uni")) t.push(`大学共通：${d.uni}`);
+  if(enabled("naka")) t.push(`中百舌鳥C：${d.naka}`);
+  if(enabled("sug")) t.push(`杉本C：${d.sug}`);
+  if(enabled("mori")) t.push(`森之宮C：${d.mori}`);
 
-document.getElementById('nextDay').onclick = () => {
-  if (dayIndex >= timetableDays.length - 1) return;
-  dayIndex++;
-  renderDay();
-  updateDayButtons();
-};
-
-function updateDayButtons() {
-  setDayButton('prevDay', dayIndex > 0);
-  setDayButton('nextDay', dayIndex < timetableDays.length - 1);
-}
-
-function setDayButton(id, enabled) {
-  const btn = document.getElementById(id);
-  btn.disabled = !enabled;
-  btn.classList.toggle('enabled', enabled);
-  btn.classList.toggle('disabled', !enabled);
-}
-
-// =============================
-// 初期化
-// =============================
-
-window.addEventListener('load', () => {
-  const showTimetablePages = ['index', 'top']; // ← 表示したいページ
-
-  if (showTimetablePages.includes(PAGE_TYPE)) {
-    initTimetable();
-  } else {
-    const el = document.getElementById('timetableCookie');
-    if (el) el.style.display = 'none';
+  if(enabled("club")){
+    if(!d.clubList || d.clubList.length === 0){
+      t.push("シネマクラブの活動予定はありません");
+    } else {
+      d.clubList.forEach((item, idx) => {
+        if(!item.content) return;
+        t.push(
+          `活動${idx+1}：${item.content}` +
+          (item.time ? ` / ${item.time}` : "") +
+          (item.place ? ` / ${item.place}` : "") +
+          (item.need ? ` / ${item.need}` : "") +
+          (item.note ? ` / ${item.note}` : "")
+        );
+      });
+    }
   }
-});
-
-document.addEventListener('click', e => {
-  const cell = e.target.closest('.tt-title');
-  if (!cell) return;
-
-  const workId = cell.dataset.workid;
-  if (!workId) return;
-
-  openWorkModal(workId);
-});
-
-
-
-
-/*タイムテーブル　終*/
-/* モーダルはじめ */
-
-/**
- * 表示用にデータを整形
- */
-function normalizeWorkData(data) {
-  if (!data) return null;
-  const imageUrl = data.image || '';
-
-  const imageType =
-    /\.pdf$/i.test(imageUrl)
-      ? 'pdf'
-      : imageUrl
-        ? 'image'
-        : null;
-
-  return {
-    ...data,
-
-    // 所要時間 → 約○○分
-    durationText:
-      data.duration
-        ? `所要時間：約${data.duration}分`
-        : '',
-
-    // 新作 / 過去作
-    badgeText:
-      data.category === '新作'
-        ? '新作'
-        : data.category === '過去作'
-          ? '過去作'
-          : '',
-
-    // 画像種別判定
-    imageType
-  };
+  return t.join(" ／ ");
 }
 
-
-/**
- * モーダルを開く
- */
-
-function openWorkModal(workId) {
-  if (!workId) return;
-
-  document.body.classList.add('modal-open');
-  document.getElementById('modal').classList.remove('hidden');
-
-  if (workDetailCache[workId]) {
-    showModal(workDetailCache[workId]);
-    return;
-  }
-
-  openModalSkeleton();
-
-  callGAS('getWorkDetail', { workId })
-    .then(res => {
-      if (!res) {
-        closeModal();
-        return;
-      }
-      workDetailCache[workId] = res;
-      showModal(res);
-    })
-    .catch(err => {
-      console.error(err);
-      closeModal();
-    });
+/* ===== 今日 & 1週間 ===== */
+function render(){
+  if(!allData || !allData.length) return;
+  renderToday();
+  renderWeek();
 }
-
-
-
-
-/**
- * モーダルを閉じる
- */
-function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
-  document.body.classList.remove('modal-open');
-}
-
-/**
- * skeleton 表示
- */
-function openModalSkeleton() {
-  document.getElementById('modalTitle').textContent = '読み込み中…';
-  document.getElementById('modalRuby').textContent = '';
-  document.getElementById('modalCategory').textContent = '';
-  document.getElementById('modalDesc').textContent = '';
-  document.getElementById('modalCaution').innerHTML = '';
-  document.getElementById('modalNote').textContent = '';
-  document.getElementById('modalDuration').textContent = '';
-  document.getElementById('modalBadge').textContent = '';
-
-  document.getElementById('modalImage').classList.add('hidden');
-  document.getElementById('modalPdf').classList.add('hidden');
-  document.getElementById('modalImageSvg').innerHTML = '';
-}
-
-
-/**
- * モーダル内容描画
- */
-function showModal(rawData) {
-  const data = normalizeWorkData(rawData);
-  const modalImage = document.getElementById('modalImage');
-  const zoomClose = document.getElementById('imageZoomClose');
-  const modalBody = document.querySelector('.modal-body');
-  console.log('image url =', data.image);
-  console.log('imageType =', data.imageType);
-  if (!data) return;
-
-  // ===== テキスト =====
-  modalTitle.textContent = data.title || '';
-  modalRuby.textContent = data.ruby ? `（${data.ruby}）` : '';
-  modalDesc.textContent = data.description || '';
-  modalNote.textContent = data.notes || '';
-  modalDuration.textContent = data.durationText || '';
-
-  // ===== バッジ =====
-  modalBadge.textContent = '';
-  modalBadge.className = 'badge';
-
-  if (data.badgeText) {
-    modalBadge.textContent = data.badgeText;
-    modalBadge.classList.add(
-      data.category === '新作' ? 'badge-new' : 'badge-archive'
-    );
-  }
-
-  // ===== 注意 =====
-  modalCaution.innerHTML = '';
-  (data.cautions || []).forEach(t => {
-    const p = document.createElement('p');
-    p.textContent = t;
-    modalCaution.appendChild(p);
-  });
-
-  // ===== 画像 / PDF =====
-  modalImage.classList.add('hidden');
-  modalPdf.classList.add('hidden');
-  modalImageSvg.innerHTML = '';
-  modalImage.src = '';
-  modalPdf.src = '';
-
-  if (!data.imageType) return;
-
-  if (data.imageType === 'pdf') {
-    modalPdf.src = data.image;
-    modalPdf.classList.remove('hidden');
-  } else {
-    modalImage.src = data.image;
-    modalImage.classList.remove('hidden');
-  }
-    // ★ 拡大状態を必ずリセット
-    modalImage.classList.remove('zoomed');
-    zoomClose.classList.add('hidden');
-    modalBody.style.overflow = 'auto';
-}
-
-
-/* ===== 初期ロード処理 ===== */
-window.addEventListener('load', () => {
-
-  // モーダル閉じる
-  document.getElementById('modalClose').onclick = closeModal;
-  document.getElementById('modalBack').onclick = closeModal;
-
-  // 画像クリックで拡大
-  const modalImage = document.getElementById('modalImage');
-  const zoomClose = document.getElementById('imageZoomClose');
-  const modalBody = document.querySelector('.modal-body');
-  if (modalImage) {
-    modalImage.loading = 'lazy';
-
-    modalImage.addEventListener('click', () => {
-    modalImage.classList.toggle('zoomed');
-    const isZoomed = modalImage.classList.contains('zoomed');
-    zoomClose.classList.toggle('hidden', !isZoomed);
-
-    // 拡大中は背景スクロール止める（任意）
-    modalBody.style.overflow = isZoomed ? 'hidden' : 'auto';
-    });
-    zoomClose.addEventListener('click', (e) => {
-   e.stopPropagation(); // 画像クリックと干渉させない
-
-    modalImage.classList.remove('zoomed');
-    zoomClose.classList.add('hidden');
-    modalBody.style.overflow = 'auto';
-  });
-  }
-
-  // ===== 作品データ事前ロード（最重要）=====
-
-  callGAS('getAllWorkDetails')
-.then(list => {
-  if (!Array.isArray(list)) {
-    console.error('getAllWorkDetails failed');
-    return;
-  }
-
-  list.forEach(w => {
-    workDetailCache[w.workId] = w;
-  });
-
-  worksReady = true;
-
-  // ★ 作品詳細が本当に準備できた後で loading を消す
-  stopLoadingScreen();
-
-  console.log('works preloaded:', Object.keys(workDetailCache).length);
-})
-.catch(err => {
-  console.error('work preload error', err);
-  // 最低限 UI は解除
-  stopLoadingScreen();
-});
-
-//===== 画像拡大後の動き =====
-
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-let currentX = 0;
-let currentY = 0;
-
-modalImage.addEventListener('pointerdown', e => {
-  if (!modalImage.classList.contains('zoomed')) return;
-
-  isDragging = true;
-  startX = e.clientX - currentX;
-  startY = e.clientY - currentY;
-
-  modalImage.setPointerCapture(e.pointerId);
-});
-
-modalImage.addEventListener('pointermove', e => {
-  if (!isDragging) return;
-
-  currentX = e.clientX - startX;
-  currentY = e.clientY - startY;
-
-  modalImage.style.transform =
-    `scale(2) translate(${currentX}px, ${currentY}px)`;
-});
-
-modalImage.addEventListener('pointerup', () => {
-  isDragging = false;
-});
-modalImage.addEventListener('pointercancel', () => {
-  isDragging = false;
-});
-
-function resetImageTransform(){
-  currentX = 0;
-  currentY = 0;
-  modalImage.style.transform = 'scale(1)';
-}
-
-zoomClose.addEventListener('click', () => {
-  resetImageTransform();
-});
-
-modalImage.addEventListener('click', () => {
-  if (!modalImage.classList.contains('zoomed')) return;
-  // 拡大解除時
-  resetImageTransform();
-});
-
-
-
-
-//=====モーダル終了=====
-
-
-
-  // ヘッダ情報
-  callGAS('getEventHeader', { siteNo: SITE_NO })
-    .then(data => {
-      if (!data) return;
-      document.getElementById('eventTitle').textContent = data.title || '';
-      document.getElementById('eventDesc').textContent = data.description || '';
-    });
-
-  // ログ
-  callGAS('logPageView', {
-    pageType: PAGE_TYPE,
-    siteNo: SITE_NO
-  });
-
-  // 時計
-  updateNowDateTime();
-  setInterval(updateNowDateTime, 1000);
-});
-
-if (PAGE_TYPE !== 'com') {
-  callGAS("getButtonData", {
-  pageType: PAGE_TYPE,
-  siteNo: SITE_NO
-}).then(renderButtons);
-}
-
-  function updateNowDateTime() {
-  const now = new Date();
-
-  const date =
-    `${now.getMonth() + 1}月${now.getDate()}日`;
-
-  const time =
-    now.toTimeString().slice(0, 8); // HH:mm:ss
-
-  document.getElementById('nowDateTime').textContent =
-    `現在　${date}　時刻　${time}`;
-}
-
- // 初回実行
- updateNowDateTime();
-
- // 1秒更新
- setInterval(updateNowDateTime, 1000);
-
-let eventStart = null;
-let eventEnd = null;
-  callGAS("getEventHeader", { siteNo: SITE_NO })
-  .then(data => {
-    document.getElementById('eventTitle').textContent = data.title;
-    document.getElementById('eventDesc').textContent = data.description;
-  });
-
-
-
-//ボタンを描写
-
-if (PAGE_TYPE !== 'com') {
-  callGAS("getButtonData", {
-  pageType: PAGE_TYPE,
-  siteNo: SITE_NO
-  }).then(renderButtons);
-}
-
-function renderButtons(buttons) {
-  console.log('buttons:', buttons); // ←ここで確認
-  const area = document.getElementById('linkArea');
-  if (!area || !buttons || !buttons.length) return;
-
-  area.style.display = 'flex';
-  area.innerHTML = '';
-
-  buttons.forEach(btn => {
-    const a = document.createElement('a');
-    a.textContent = btn.name;
-    a.href = btn.url;
-    a.target = btn.target || '_blank';
-    a.rel = 'noopener';
-    a.className = 'action-button';
-    area.appendChild(a);
-  });
-}
-
-
-
-//ボタンを描写終
-
-console.log('PAGE_TYPE=', PAGE_TYPE);
-console.log('SITE_NO=', SITE_NO);
-
-
+function renderToday(){
+  const todayStr = new Date().toDateString();
+  const todayData = allData.find(d =>
+    new Date(d.dateISO).toDateString() === todayStr
+  ) || allData[0];
+
+  const text = buildText(todayData) || "";
+  const durationSec = Math.max(10, Math.min(30, Math.ceil(text.length / 4)));
+
+  today.innerHTML = `
+    <div class="cookie">
+      <h3>今日の予定</h3>
+      <strong>${todayData.month}/${todayData.day}（${todayData.week}）</strong>
+      ${scrollSpan(text, durationSec, (todayData.uni||"").includes("試験") || (todayData.naka||"").includes("試験")||(todayData.uni||"").includes("テスト") || (todayData.naka||"").includes("共テ"))}
+    </div>
+  `;
   
+  const span = today.querySelector(".scroll span");
+  span.style.animationIterationCount = "infinite";
+}
+
+function renderWeek(){
+  if(!allData || !allData.length) return;
+  weekIndex = weekIndex % allData.length;
+
+  if(weekTimer) clearTimeout(weekTimer);
+
+  const d = allData[weekIndex];
+  const text = buildText(d);
+
+  week.innerHTML = `
+    <div class="cookie">
+      <h3>1週間の予定</h3>
+      <strong>${d.month}/${d.day}（${d.week}）</strong>
+      ${scrollSpan(text, 1, d.uni.includes("試験") || d.naka.includes("試験")||d.uni.includes("テスト") || d.naka.includes("共テ"))}
+    </div>
+  `;
+
+  const span = week.querySelector(".scroll span");
+  const speed = 100;
+  const distance = span.scrollWidth + week.querySelector(".scroll").clientWidth;
+  const durationSec = Math.max(6, distance / speed);
+
+  span.style.animationDuration = durationSec + "s";
+  span.style.animationIterationCount = "1";
+
+  span.addEventListener("animationend", () => {
+    weekTimer = setTimeout(() => {
+      weekIndex = (weekIndex + 1) % allData.length;
+      renderWeek();
+    }, 1000);
+  }, { once: true });
+}
+
+/* ===== タブ切替 ===== */
+function showTab(tab){
+  document.getElementById("uniArea").style.display  = (tab === 'uni') ? 'block' : 'none';
+  document.getElementById("nakaArea").style.display = (tab === 'naka') ? 'block' : 'none';
+  document.getElementById("moriArea").style.display = (tab === 'mori') ? 'block' : 'none';
+  document.getElementById("clubArea").style.display = (tab === 'club') ? 'block' : 'none';
+
+  document.getElementById("tabUni").className  = (tab === 'uni') ? 'tab-active' : 'tab-inactive';
+  document.getElementById("tabNaka").className = (tab === 'naka') ? 'tab-active' : 'tab-inactive';
+  document.getElementById("tabMori").className = (tab === 'mori') ? 'tab-active' : 'tab-inactive';
+  document.getElementById("tabClub").className = (tab === 'club') ? 'tab-active' : 'tab-inactive';
+}
+
+/* ===== 共通カレンダー生成 ===== */
+function buildCalendarHtml({
+  title,
+  subtitle,
+  year,
+  month,
+  markFunc,
+  moveFunc,
+  openFunc,
+  legend
+}){
+  let html = `
+  <div class="cookie">
+    <h3>${title}</h3>
+    <h3>${subtitle}</h3>
+    <div class="calendar-nav">
+      <button onclick="${moveFunc}(-1)">◀</button>
+      <strong>${year}年 ${month}月</strong>
+      <button onclick="${moveFunc}(1)">▶</button>
+    </div>
+    <div class="calendar-grid">
+  `;
+
+  ["日","月","火","水","木","金","土"].forEach(d=> html+=`<div class="day-name">${d}</div>`);
+
+  const first = new Date(year, month-1, 1);
+  for(let i=0;i<first.getDay();i++) html+=`<div></div>`;
+
+  const last = new Date(year, month, 0).getDate();
+  for(let d=1; d<=last; d++){
+    const info = calendarData.find(x =>
+      x.year === year &&
+      x.month === month &&
+      x.day === d
+    );
+
+    const mark = markFunc(info);
+
+    const cellDate = new Date(year, month-1, d);
+    const isToday = cellDate.toDateString() === new Date().toDateString();
+    const isHoliday = info && info.week && info.week.includes("祝");
+    const isSun = cellDate.getDay() === 0;
+    const isSat = cellDate.getDay() === 6;
+
+    const cls = isToday ? "cal-cell cal-today" :
+              (isHoliday || isSun) ? "cal-cell cal-sun" :
+              isSat ? "cal-cell cal-sat" :
+              "cal-cell";
+
+    html += `
+      <div class="${cls}" onclick="${openFunc}(${year}, ${month}, ${d})">
+        ${d}
+        ${isToday ? `<span class="today-label">本日</span>` : ''}
+        <div>${mark}</div>
+      </div>
+    `;
+  }
+
+  html += `</div>
+    <div class="legend">
+      ${legend}
+    </div>
+  </div>`;
+
+  return html;
+}
+
+/* ===== 学事記号生成 ===== */
+function parseUniMarks(text){
+  if(!text) return [];
+  const parts = String(text).split(",").map(s=>s.trim()).filter(Boolean);
+  const marks = [];
+  parts.forEach(p=>{
+    if(/授業日/.test(p)) marks.push("A");
+    if(/祝日授業/.test(p)) marks.push("B");
+    if(/テスト|期末試験/.test(p)) marks.push("C");
+    if(/補講/.test(p)) marks.push("D");
+    if(/授与式|入学式/.test(p)) marks.push("式典");
+    if(/入試/.test(p)) marks.push("E");
+    if(!/授業日|祝日授業|テスト|期末試験|補講|授与式|入学式|入試/.test(p)){
+      marks.push("★");
+    }
+  });
+  return [...new Set(marks)];
+}
+
+function parseCampusMark(text, mark){
+  if(!text) return [];
+  const parts = String(text).split(",").map(s=>s.trim()).filter(Boolean);
+  return parts.length ? [mark] : [];
+}
+
+/* ===== 中百舌鳥カレンダー ===== */
+function renderNakaCalendar(){
+  if(!calendarData || !calendarData.length){
+    calendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+
+  const base = new Date();
+  base.setMonth(base.getMonth()+nakaOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+
+  const html = buildCalendarHtml({
+    title: "中百舌鳥キャンパス活動可能日概要",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "nakaMove",
+    openFunc: "openNakaModal",
+    markFunc: (info)=>{
+      const status = info ? (info.status||"") : "";
+      const uniMarks = parseUniMarks(info ? info.uniText : "");
+      const nakaN = parseCampusMark(info ? info.nakaText : "", "N");
+      const marks = [];
+      if(status) marks.push(status);
+      marks.push(...uniMarks);
+      marks.push(...nakaN);
+      return marks.length ? marks.join("") : "";
+    },
+    legend: ["～記号の説明（詳しくは日付をクリック）～",
+    "〇=9:00〜21:00 / ●=18:30〜21:00（部室は9:00〜21:00可） ",
+    " ◇=9:00〜21:00（テスト期間） / ◆=18:30〜21:00（部室は9:00〜21:00可・テスト期間）",
+    " △=9:00〜21:00（静寂な活動のみ可／一部施設使用不可） / ▲=18:30〜21:00（部室は9:00〜21:00可／静寂な活動のみ可）",
+    " ×=終日使用禁止 / ！=今後の情報に注意 / ★=大学全体学事予定あり / ?=未定",
+    " A=授業日 / B=祝日授業 / C=テスト / D=補講 / 式典=授与式・入学式 / E=入試 / N=中百舌鳥C学事"].join("<br>")
+  });
+
+  calendar.innerHTML = html;
+}
+
+function openNakaModal(year, month, day){
+  const info = calendarData.find(x =>
+    x.year === year && x.month === month && x.day === day
+  );
+
+  const mark = info ? info.status : "";
+  const timeText = statusText(mark) || "不明";
+
+  const fmt = (title, text) => {
+    if(!text) return "";
+    return `
+      <div class="modal-section">
+        <strong>${title}</strong>
+        ${text.replace(/\n/g, "<br>")}
+      </div>
+    `;
+  };
+
+  let html = "";
+
+  html += `
+    <div class="modal-section">
+      <strong>活動可能時間</strong>
+      ${timeText}
+    </div>
+  `;
+
+  const nakaText = info ? (info.nakaText||"") : "";
+  const uniText = info ? (info.uniText||"") : "";
+
+  html += `<div class="modal-divider"></div>`;
+  html += fmt("中百舌鳥C 学事日程", nakaText || "予定がありません");
+
+  html += `<div class="modal-divider"></div>`;
+  html += fmt("大学全体 学事日程", uniText || "予定がありません");
+
+  modalDate.textContent = `${year}/${month}/${day}（${info ? info.week : ""}）`;
+  modalStatus.innerHTML = html;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function nakaMove(v){
+  nakaOffset = Math.min(6, Math.max(-6, nakaOffset + v));
+  renderNakaCalendar();
+}
+
+/* ===== 大学カレンダー ===== */
+function renderUniCalendar(){
+  if(!calendarData || !calendarData.length){
+    uniCalendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+
+  const base = new Date();
+  base.setMonth(base.getMonth()+uniOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+
+  const html = buildCalendarHtml({
+    title: "大学全体 学事日程",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "uniMove",
+    openFunc: "openUniModal",
+    markFunc: (info)=>{
+      const uniMarks = parseUniMarks(info ? info.uniText : "");
+      const nakaN = parseCampusMark(info ? info.nakaText : "", "N");
+      const sugiS = parseCampusMark(info ? info.sugiText : "", "S");
+      const moriM = parseCampusMark(info ? info.moriText : "", "M");
+      const marks = [...uniMarks, ...nakaN, ...sugiS, ...moriM];
+      return marks.length ? marks.join(",") : "ー";
+    },
+    legend: ["～記号の説明（詳しくは日付をクリック）～",
+    "A=授業日 / B=祝日授業 / C=テスト / D=補講 / 式典=授与式・入学式 / E=入試",
+    "★=その他の大学全体学事 / N=中百舌鳥C学事 / S=杉本C学事 / M=森之宮C学事"].join("<br>")
+  });
+
+  uniCalendar.innerHTML = html;
+}
+
+function openUniModal(year, month, day){
+  const info = calendarData.find(x =>
+    x.year === year && x.month === month && x.day === day
+  );
+
+  if(!info){
+    modalDate.textContent = `${year}/${month}/${day}`;
+    modalStatus.textContent = "情報がありません";
+    document.getElementById("modal").style.display = "flex";
+    return;
+  }
+
+  const block = (label, text) => `
+    <div class="modal-section">
+      <strong>${label}</strong>
+      ${text ? text.replace(/\n/g,"<br>") : "予定はありません"}
+    </div>
+  `;
+
+  let html = "";
+  html += block("大学全体", info.uniText);
+  html += `<div class="modal-divider"></div>`;
+  html += block("中百舌鳥C", info.nakaText);
+  html += `<div class="modal-divider"></div>`;
+  html += block("杉本C", info.sugiText);
+  html += `<div class="modal-divider"></div>`;
+  html += block("森之宮C", info.moriText);
+
+  modalDate.textContent = `${year}/${month}/${day}（${info.week || ""}）`;
+  modalStatus.innerHTML = html;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function uniMove(v){
+  uniOffset = Math.min(6, Math.max(-6, uniOffset + v));
+  renderUniCalendar();
+}
+
+/* ===== 森之宮カレンダー ===== */
+function renderMoriCalendar(){
+  if(!calendarData || !calendarData.length){
+    moriCalendar.innerHTML = "<div class='cookie'>カレンダーのデータがありません</div>";
+    return;
+  }
+
+  const base = new Date();
+  base.setMonth(base.getMonth()+moriOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth()+1;
+
+  const html = buildCalendarHtml({
+    title: "森之宮C 学事日程",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "moriMove",
+    openFunc: "openMoriModal",
+    markFunc: (info)=>{
+      if(!info) return "ー";
+      const uniMarks = parseUniMarks(info.uniText || "");
+      const moriMarks = parseCampusMark(info.moriText || "", "M");
+      // N/S を含む可能性があるので除外
+      const filtered = [...uniMarks, ...moriMarks].filter(x => x !== "N" && x !== "S");
+      return filtered.length ? filtered.join("") : "ー";
+    },
+
+    legend: ["～記号の説明（詳しくは日付をクリック）～",
+    "A=授業日 / B=祝日授業 / C=テスト / D=補講日 / 式典=授与式・入学式 / E=入試",
+    "★=その他の大学全体学事 / M=森之宮C学事"].join("<br>")
+  });
+
+  moriCalendar.innerHTML = html;
+}
+
+function openMoriModal(year, month, day){
+  const info = calendarData.find(x =>
+    x.year === year && x.month === month && x.day === day
+  );
+
+  const uniText = info ? info.uniText : "";
+  const moriText = info ? info.moriText : "";
+
+  let html = "";
+
+  html += `<div class="modal-section"><strong>大学全体学事日程</strong>${uniText ? uniText.replace(/\n/g,"<br>") : "予定がありません"}</div>`;
+  html += `<div class="modal-divider"></div>`;
+  html += `<div class="modal-section"><strong>森之宮C予定</strong>${moriText ? moriText.replace(/\n/g,"<br>") : "予定がありません"}</div>`;
+
+  modalDate.textContent = `${year}/${month}/${day}（${info ? info.week : ""}）`;
+  modalStatus.innerHTML = html;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function moriMove(v){
+  moriOffset = Math.min(6, Math.max(-6, moriOffset + v));
+  renderMoriCalendar();
+}
+
+/* ===== 部活カレンダー ===== */
+/* ===== 部活カレンダー ===== */
+function renderClubCalendar(){
+  const base = new Date();
+  base.setMonth(base.getMonth() + clubOffset);
+
+  const year = base.getFullYear();
+  const month = base.getMonth() + 1;
+
+  const html = buildCalendarHtml({
+    title: "部活動スケジュール",
+    subtitle: "（日付をクリックすると詳細が表示されます）",
+    year,
+    month,
+    moveFunc: "clubMove",
+    openFunc: "openClubModal",
+    markFunc: (info)=>{
+      // カレンダー用の部活情報を参照（calendarData ではなく clubCalData）
+      const clubInfo = clubCalData.find(x => x.year === info.year && x.month === info.month && x.day === info.day);
+
+      const clubMark = (clubInfo && clubInfo.clubList && clubInfo.clubList.length > 0) ? ["●"] : [];
+      const uniMarks = parseUniMarks(info ? info.uniText : "");
+      const nakaN = parseCampusMark(info ? info.nakaText : "", "N");
+      const moriM = parseCampusMark(info ? info.moriText : "", "M");
+
+      const marks = [...clubMark, ...uniMarks, ...nakaN, ...moriM];
+      return marks.length ? marks.join(",") : "ー";
+    },
+    legend: [
+      "～記号の説明（詳しくは日付をクリック）～",
+      "●=部活予定あり / ー=学事、部活動ともに予定なし",
+      "A=授業日 / B=祝日授業 / C=テスト / D=補講 / 式典=学位授与式・入学式 / E=入試 / ★=その他の大学全体学事",
+      "N=中百舌鳥Cの学事 / M=森之宮Cの学事"
+    ].join("<br>")
+  });
+
+  document.getElementById("clubCalendar").innerHTML = html;
+}
+
+function openClubModal(year, month, day){
+  const infoCal  = calendarData.find(x => x.year === year && x.month === month && x.day === day);
+  const infoClub = clubCalData.find(x => x.year === year && x.month === month && x.day === day);
+
+  const uniText  = infoCal ? infoCal.uniText : "";
+  const nakaText = infoCal ? infoCal.nakaText : "";
+  const moriText = infoCal ? infoCal.moriText : "";
+  const nakaStatus = infoCal ? infoCal.status : "";
+
+  const clubList = infoClub ? infoClub.clubList : [];
+
+  if(!uniText &&!nakaText &&!moriText &&!nakaStatus&& (!clubList || clubList.length === 0)){
+    modalDate.textContent = `${year}/${month}/${day}`;
+    modalStatus.textContent = "この日の活動はありません";
+    document.getElementById("modal").style.display = "flex";
+    return;
+  }
+
+  // ----------------------------
+  // ページング設定
+  // ----------------------------
+  let page = 0;
+  let pageSize = 5;
+  const pageOptions = [1,5,10,20,50,100];
+
+  const getMaxPage = () => Math.max(0, Math.ceil(clubList.length / pageSize) - 1);
+
+  // ----------------------------
+  // モーダル本文を作る関数
+  // ----------------------------
+  const render = () => {
+    let html = "";
+
+    // 2) 大学の学事日程
+    html += `<div class="modal-section"><strong>大学全体学事日程</strong><br>${uniText ? uniText.replace(/\n/g,"<br>") : "大学全体の予定はありません"}</div>`;
+    html += `<div class="club-divider">────────────</div>`;
+
+    // 3) 中百舌鳥C 活動可能時間
+    html += `<div class="modal-section"><strong>中百舌鳥C 活動可能時間</strong><br>${nakaStatus ? statusText(nakaStatus) : "中百舌鳥Cの活動情報はありません"}</div>`;
+    html += `<div class="club-divider">────────────</div>`;
+
+    // 4) 中百舌鳥C 学事日程
+    html += `<div class="modal-section"><strong>中百舌鳥C 学事日程</strong><br>${nakaText ? nakaText.replace(/\n/g,"<br>") : "中百舌鳥Cの予定はありません"}</div>`;
+    html += `<div class="club-divider">────────────</div>`;
+
+    // 5) 森之宮C 学事日程
+    html += `<div class="modal-section"><strong>森之宮C 学事日程</strong><br>${moriText ? moriText.replace(/\n/g,"<br>") : "森之宮Cの予定はありません"}</div>`;
+
+    // 6) 太線
+    html += `<div class="club-divider">────────────────────────</div>`;
+
+    // 7) シネマクラブの活動
+    html += `<div class="modal-section"><strong>シネマクラブの活動</strong></div>`;
+    if(clubList.length === 0){
+      html += `<div class="modal-section">シネマクラブの活動はありません</div>`;
+    }
+    // 8〜9) ページ表示 + 表示件数 + 前へ/次へ（統合）
+if(clubList.length > 0){
+  const maxPage = getMaxPage();
+  const total = clubList.length;
+
+  html += `
+    <div class="paging-area">
+      <div class="paging-row">
+        <span class="paging-info">ページ ${page+1}/${maxPage+1}（合計 ${total}件）</span>
+      </div>
+
+      <div class="paging-row">
+        <span class="paging-info">表示件数：</span>
+        <select id="pageSizeSelect">
+          ${pageOptions.map(v => `<option value="${v}" ${v===pageSize?'selected':''}>${v}</option>`).join("")}
+        </select>
+
+        <button id="prevBtn" class="paging-btn" ${page<=0 ? "disabled" : ""}>◀ 前へ</button>
+        <button id="nextBtn" class="paging-btn" ${page>=maxPage ? "disabled" : ""}>次へ ▶</button>
+      </div>
+    </div>
+  `;
+}
+
+    // 10) 部活内容（表示件数に応じる）
+    if(clubList.length > 0){
+      const pageSizeElem = document.getElementById("pageSizeSelect");
+      const pageSize = pageSizeElem ? Math.max(1, Number(pageSizeElem.value)) : 5;
+      const start = page * pageSize;
+      const end = start + pageSize;
+      const listToShow = clubList.slice(start, end);
+
+      listToShow.forEach((it, idx) => {
+        if(!it.content) return;
+        const lines = [];
+        // 活動内容：
+        lines.push(`活動内容：${it.content}`);
+        // 活動時間：
+        if(it.time) lines.push(`活動時間：${it.time}`);
+        // 活動場所：
+        if(it.place) lines.push(`活動場所：${it.place}`);
+        // 必要人員：
+        if(it.need) lines.push(`必要人員：${it.need}`);
+        // 備考：
+        if(it.note) lines.push(`備考：${it.note}`);
+
+    html += `
+      <div class="club-card">
+        <div class="club-card-title"><strong>活動内容${start + idx + 1}</strong></div>
+        <div class="club-card-body">${lines.join("\n")}</div>
+      </div>
+    `;
+  });
+}
+    return html;
+  };
+
+  // 初回表示
+  modalDate.textContent = `${year}/${month}/${day}`;
+  modalStatus.innerHTML = render();
+  document.getElementById("modal").style.display = "flex";
+
+  // ----------------------------
+  // ボタンイベント設定
+  // ----------------------------
+  const bindEvents = () => {
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const pageSizeSelect = document.getElementById("pageSizeSelect");
+
+    if(prevBtn){
+      prevBtn.addEventListener("click", () => {
+        if(page > 0){
+          page--;
+          modalStatus.innerHTML = render();
+          bindEvents();
+        }
+      });
+    }
+
+    if(nextBtn){
+      nextBtn.addEventListener("click", () => {
+        const maxPage = getMaxPage();
+        if(page < maxPage){
+          page++;
+          modalStatus.innerHTML = render();
+          bindEvents();
+        }
+      });
+    }
+
+    if(pageSizeSelect){
+      pageSizeSelect.addEventListener("change", (e) => {
+        pageSize = Number(e.target.value);
+        page = 0; // ページリセット
+        modalStatus.innerHTML = render();
+        bindEvents();
+      });
+    }
+  };
+
+  bindEvents();
+}
+
+function clubMove(v){
+  clubOffset = Math.min(6, Math.max(-6, clubOffset + v));
+  renderClubCalendar();
+}
+
+
+/* ===== 既存のステータス判定 ===== */
+function statusText(s){
+  if(!s) return "";
+  s = String(s).trim();
+  s = s.replace(/[○〇]/g, "〇");
+  s = s.replace(/[xX✕✖]/g, "×");
+  s = s.replace(/[?？]/g, "?");
+
+  const main = s.match(/[〇●◇◆△▲×]/g) || [];
+  const note = s.match(/[!！]/g) || [];
+
+  let mainText = "";
+  if(main.includes("〇")) mainText = "9:00〜21:00";
+  else if(main.includes("●")) mainText = "18:30〜21:00（部室は9:00〜21:00可）";
+  else if(main.includes("◇")) mainText = "9:00〜21:00（テスト期間）";
+  else if(main.includes("◆")) mainText = "18:30〜21:00（部室は9:00〜21:00可・テスト期間）";
+  else if(main.includes("△")) mainText = "9:00〜21:00（静寂な活動のみ可／一部施設使用不可）";
+  else if(main.includes("▲")) mainText = "18:30〜21:00（部室は9:00〜21:00可／静寂な活動のみ可）";
+  else if(main.includes("×")) mainText = "終日使用禁止";
+  else if(main.includes("?")) mainText = "未定";
+
+  const noteText = note.length ? "★今後の情報に注意★" : "";
+  return [mainText, noteText].filter(x => x).join(" / ");
+}
+
+
+
+/* ===== モーダル ===== */
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+  // これを入れることで「閉じる」すると毎回初期状態に戻る
+  modalStatus.innerHTML = "";
+}
+
+/* ===== 自動切替 ===== */
+window.onload = () => {
+  load();
+  scheduleMidnightReload();
+
+  scheduleMidnightReload();
+  runGAS("getButtonData", "A", true).then(renderLinks);
+  refreshRoomStatus();
+};
+
+
+
+
+
+ //===== 入退室処理 =====
+ function updateRoomUI(status){
+  document.getElementById("roomCount").textContent = status.count;
+
+  const enterBtn = document.getElementById("enterBtn");
+  const exitBtn  = document.getElementById("exitBtn");
+
+  if(status.myStatus === "in"){
+    enterBtn.disabled = true;
+    exitBtn.disabled  = false;
+  }else{
+    enterBtn.disabled = false;
+    exitBtn.disabled  = true;
+  }
+}
+
+function enterRoom(){
+  runGAS("enterRoom", visitId).then(refreshRoomStatus);
+}
+
+function exitRoom(){
+  runGAS("exitRoom", visitId).then(refreshRoomStatus);
+}
+
+function refreshRoomStatus(){
+  runGAS("getRoomStatus", visitId).then(updateRoomUI);
+}
+
+setInterval(refreshRoomStatus, 5 * 60 * 1000);
+
+
 </script>
 
 </body>
 </html>
+
 
